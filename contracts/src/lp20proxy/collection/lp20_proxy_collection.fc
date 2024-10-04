@@ -1,5 +1,5 @@
 
-#include "../../includes/stdlib.fc";
+#include "../../../includes/stdlib.fc";
 
 () main(int my_balance, int msg_value, cell in_msg_full, slice in_msg_body) impure {
 

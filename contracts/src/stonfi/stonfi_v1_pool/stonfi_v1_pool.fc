@@ -1,12 +1,15 @@
 #pragma version >=0.2.0;
 
-#include "common/stdlib.func";
-#include "common/gas.func";
-#include "common/messages.func";
+#include "../../../includes/common/stdlib.func";
+#include "../../../includes/common/gas.func";
+#include "../../../includes/common/messages.func";
+
 #include "pool/op.func";
 #include "pool/params.func";
 #include "pool/errors.func";
-#include "common/utils.func";
+
+#include "../../../includes/common/utils.func";
+
 #include "pool/storage.func";
 #include "pool/utils.func";
 #include "pool/jetton-utils.func";
