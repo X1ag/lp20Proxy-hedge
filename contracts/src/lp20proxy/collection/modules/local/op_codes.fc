@@ -1,0 +1,5 @@
+
+const int opr::excess = 0xd53276db;
+const int opr::jetton_notify = 0x7362d09c;
+
+const int opr::make_hedge = "operation::make_hedge"c;

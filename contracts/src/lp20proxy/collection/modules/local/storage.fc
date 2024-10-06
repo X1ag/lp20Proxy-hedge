@@ -1,0 +1,37 @@
+
+;; basic
+
+global slice storage::admin_address;
+global int storage::next_lp20proxy_index;
+global cell storage::lp20proxy_content;
+global cell storage::lp20proxy_item_code;
+global cell storage::lp20proxy_royalty_params;
+
+;; extended
+
+
+;; funcs
+
+() load_stg() impure inline {
+    slice lp20proxy_storage = get_data().begin_parse();
+
+    storage::admin_address = lp20proxy_storage~load_msg_addr();
+    storage::next_lp20proxy_index = lp20proxy_storage~load_uint(64);
+    storage::lp20proxy_content = lp20proxy_storage~load_ref();
+    storage::lp20proxy_item_code = lp20proxy_storage~load_ref();
+    storage::lp20proxy_royalty_params = lp20proxy_storage~load_ref();
+
+
+}
+
+() set_stg() impure inline {
+    set_data(
+        begin_cell()
+            .store_slice(storage::admin_address)
+            .store_uint(storage::next_lp20proxy_index, 64)
+            .store_ref(storage::lp20proxy_content)
+            .store_ref(storage::lp20proxy_item_code)
+            .store_ref(storage::lp20proxy_royalty_params)
+        .end_cell()
+    );
+}

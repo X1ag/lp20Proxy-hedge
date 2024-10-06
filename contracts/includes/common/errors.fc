@@ -1,0 +1,2 @@
+
+const int err::incr_opr = 0xffff;

@@ -1,8 +1,17 @@
 () handle_router_messages(int op, int query_id, int my_balance, int msg_value, slice in_msg_body) impure inline {
     if (op == swap) {
-        (slice from_user_address, slice token_wallet, int amount, int min_out, int has_ref) = (in_msg_body~load_msg_addr(), in_msg_body~load_msg_addr(), in_msg_body~load_coins(), in_msg_body~load_coins(), in_msg_body~load_uint(1));
+
+        (slice from_user_address, ;; recipient_address 
+        slice token_wallet, ;; src jetton wallet address
+        int amount, ;; swap amount
+        int min_out, ;; min ask jetton amount
+        int has_ref) ;; has ref flag
+         = (in_msg_body~load_msg_addr(), in_msg_body~load_msg_addr(), in_msg_body~load_coins(), in_msg_body~load_coins(), in_msg_body~load_uint(1));
+
         cell ref_bodycell = in_msg_body~load_ref(); 
         slice ref_body_slice = ref_bodycell.begin_parse();
+
+        ;; from user (inital)
         slice from_real_user = ref_body_slice~load_msg_addr(); ;; parse who initialized the swap, always present
 
         int out = 0;
@@ -14,7 +23,8 @@
 
         int mode = CARRY_REMAINING_GAS;
         int gas = 0;
-    
+
+        ;; maybe referral address
         if (has_ref) {
             mode = NORMAL;
             gas = (msg_value - get_gas_fee(25000, WORKCHAIN)) / 2;

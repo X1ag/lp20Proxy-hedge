@@ -1,0 +1,3 @@
+global int ctx::oper;
+global int ctx::qryID;
+global slice ctx::send_addr;

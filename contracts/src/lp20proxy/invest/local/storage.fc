@@ -1,0 +1,14 @@
+global slice stg::admin_addr;
+
+() load_stg() impure inline {
+    slice smc_stg = get_data().begin_parse();
+    stg::admin_addr = smc_stg~load_msg_addr();
+}
+
+() set_stg() impure inline {
+    set_data(
+        begin_cell()
+            .store_slice(stg::admin_addr)
+        .end_cell()
+    );
+}
