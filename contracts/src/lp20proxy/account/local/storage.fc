@@ -5,17 +5,31 @@ global slice stg::user_addr;
 global int stg::token_amountA;
 global int stg::token_amountB;
 
+global int stg::swapped_amount;
+global int stg::lp_tokens_amount;
+global int stg::asked_lp_amount;
+
+global int stg::flag_tokens;
 global int stg::flag_lp;
 global int stg::flag_swap;
 global int stg::flag_ask_lp;
+
 
 () load_std() impure inline {
     slice smc_stg = get_data().begin_parse();
 
     stg::user_addr = smc_stg~load_msg_addr();  
     stg::collection_addr = smc_stg~load_msg_addr();
-    stg::token_amountA = smc_stg~load_coins();
-    stg::token_amountB = smc_stg~load_coins();
+
+    slice coin_slice = smc_stg~load_ref().begin_parse();
+
+    stg::token_amountA = coin_slice~load_coins();
+    stg::token_amountB = coin_slice~load_coins();
+    stg::swapped_amount = coin_slice~load_coins();
+    stg::lp_tokens_amount = coin_slice~load_coins();
+    stg::asked_lp_amount = coin_slice~load_coins();
+
+    stg::flag_tokens = smc_stg~load_uint(1);
     stg::flag_lp = smc_stg~load_uint(1);
     stg::flag_swap = smc_stg~load_uint(1);
     stg::flag_ask_lp = smc_stg~load_uint(1);
@@ -25,9 +39,17 @@ global int stg::flag_ask_lp;
     set_data(
         begin_cell()
             .store_slice(stg::user_addr)
-            .store_slice(stg::collection_addr)
-            .store_coins(stg::token_amountA)
-            .store_coins(stg::token_amountB)
+            .store_slice(stg::collection_addr) 
+            .store_ref(
+                begin_cell()
+                    .store_coins(stg::token_amountA)
+                    .store_coins(stg::token_amountB)
+                    .store_coins(stg::swapped_amount)
+                    .store_coins(stg::lp_tokens_amount)
+                    .store_coins(stg::asked_lp_amount)
+                .end_cell()
+            )
+            .store_uint(stg::flag_tokens, 1)
             .store_uint(stg::flag_lp, 1)
             .store_uint(stg::flag_swap, 1)
             .store_uint(stg::flag_ask_lp, 1)

@@ -5,6 +5,34 @@
 #include "local/storage.fc";
 #include "local/op_codes.fc";
 
+() chek_conds(int qID) impure inline {
+    if (stg::flag_tokens & stg::flag_lp & stg::flag_swap & stg::flag_ask_lp) {
+        cell message = 
+            begin_cell()
+                .store_uint(0x18, 6)
+                .store_slice(stg::collection_addr) 
+                .store_coins(0) 
+                .store_uint(0, 107)
+                .store_uint(opr::user_done)
+                .store_uint(qID, 64)
+                .store_ref(
+                    begin_cell()
+                        .store_slice(stg::user_addr)
+                        .store_coins(stg::token_amountA)
+                        .store_coins(stg::token_amountB)
+                        .store_coins(stg::swapped_amount)
+                        .store_coins(stg::lp_tokens_amount)
+                        .store_coins(stg::asked_lp_amount)
+                    .end_cell()
+                )
+            .end_cell();
+
+        stg::token_amountA = 0;
+        stg::token_amountB = 0;
+        send_raw_message(message, 128);
+    }
+}
+
 () recv_internal(int my_balance, int msg_value, cell in_msg_full, slice in_msg_body) impure {
     if (in_msg_body.slice_empty?()) { 
         return ();
@@ -51,21 +79,35 @@
 
                 send_raw_message(message.end_cell(), 64);
 
-                stg::token_amountA = 0;
-                stg::token_amountB = 0;
+                stg::flag_tokens = 1;
             }
             set_stg();
             return ();
 
         } elseif ctx::opr == opr::add_lp {
-            
+            throw_unless(96, stg::flag_tokens);
+            stg::lp_tokens_amount = in_msg_body~load_coins();
+            stg::flag_lp = 1;
+            chek_conds(ctx::qryID);
             set_stg();
             return ();
-        } elseif ctx::opr == opr::add_swap {
 
+        } elseif ctx::opr == opr::add_swap {
+            throw_unless(97, stg::flag_tokens);
+            stg::swapped_amount = in_msg_body~load_coins();
+            stg::flag_swap = 1;
+            chek_conds(ctx::qryID);
             set_stg();
             return ();
-        } 
+
+        } elseif ctx::opr == opr::ask_lp {
+            throw_unless(98, stg::flag_tokens);
+            stg::asked_lp_amount = in_msg_body~load_coins();
+            stg::flag_ask_lp = 1;
+            chek_conds(ctx::qryID);
+            set_stg();
+            return ();
+        }
     }
 
     throw(err::incr_opr);

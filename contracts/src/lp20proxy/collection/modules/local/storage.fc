@@ -5,6 +5,11 @@ global cell stg::lp20proxy_content;
 global cell stg::lp20proxy_item_code;
 global cell stg::lp20proxy_royalty_params;
 
+global slice stg::tokenA_master;
+global slice stg::tokenB_master;
+global cell stg::tokenA_wallet_code;
+global cell stg::tokenB_wallet_code;
+
 ;; extended
 global slice stg::stonfi_router_addr;
 global cell stg::proxy_acc_code;
@@ -21,6 +26,11 @@ global cell stg::proxy_acc_code;
     slice ext_data = lp20proxy_stg~load_ref().begin_parse();
     stg::stonfi_router_addr = ext_data~load_msg_addr();
     stg::proxy_acc_code = ext_data~loadr_ref();
+
+    stg::tokenA_master = ext_data~load_msg_addr();
+    stg::tokenB_master = ext_data~load_msg_addr();
+    stg::tokenA_wallet_code = ext_data~loadr_ref();
+    stg::tokenB_wallet_code = ext_data~loadr_ref();
 }
 
 () set_stg() impure inline {
@@ -35,6 +45,11 @@ global cell stg::proxy_acc_code;
                 begin_cell()
                     .store_slice(stg::stonfi_router_addr)
                     .store_ref(stg::proxy_acc_code)
+
+                    .store_slice(stg::tokenA_master)
+                    .store_slice(stg::tokenB_master)
+                    .store_ref(stg::tokenA_wallet_code)
+                    .store_ref(stg::tokenB_wallet_code)
                 .end_cell()
             )
         .end_cell()

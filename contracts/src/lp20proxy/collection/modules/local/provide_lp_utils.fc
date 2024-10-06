@@ -1,0 +1,78 @@
+;; dex provide logic
+
+cell create_provide_lp_payload(slice router_wallet_addr, cell addi_payload) impure inline {
+    cell payload =
+        begin_cell()
+            .store_uint(opr::dex::provide_lp, 32)
+            .store_slice(router_wallet_addr)
+            .store_coins(0)
+            .store_uint(1, 1)
+            .store_ref(addi_payload)
+        .end_cell();
+    return payload;
+}
+
+
+
+cell create_provide_lp_message(int qID, int jetton_amount, int fwd_amount, cell provide_lp_payload, int ton_amount) impure inline {
+    cell message = 
+        begin_cell()
+            .store_uint(0x18, 6)
+            .store_slice(stg::collection_addr) 
+            .store_coins(ton_amount) 
+            .store_uint(0, 107)
+            
+            .store_uint(opr::basic::transfer, 32)
+            .store_uint(qID, 64)
+            .store_coins(jetton_amount)
+            .store_slice(stg::stonfi_router_addr)
+            .store_uint(0, 2)
+            .store_uint(0, 1)
+            .store_coins(fwd_amount)
+            .store_uint(1, 1)
+            .store_ref(provide_lp_payload)
+        .end_cell();
+
+    return message;
+}
+
+() must_provide_lp(slice user_addr, int amountA, int amountB) impure inline {
+
+        int flow_label = 0x111;
+
+        cell router_walletA = calculate_user_jetton_wallet_address(stg::stonfi_router_addr, stg::tokenA_master, stg::tokenA_wallet_code);
+        cell router_walletB = calculate_user_jetton_wallet_address(stg::stonfi_router_addr, stg::tokenB_master, stg::tokenB_wallet_code);
+
+        ;; 0.24 TON as forward jetton amount
+
+        cell addi_payload =
+            begin_cell()
+                .store_uint(flow_label, 32)
+                .store_slice(user_addr)
+            .end_cell();
+
+        cell provide_lp_payloadA = create_provide_lp_payload(router_walletB, addi_payload);
+        cell provide_lp_msgA = create_provide_lp_message(ctx::qryID, amountA, 240000000, provide_lp_payloadA, 300000000);
+
+        cell provide_lp_payloadB = create_provide_lp_payload(router_walletA, addi_payload);
+        cell provide_lp_msgB = create_provide_lp_message(ctx::qryID, amountB, 240000000, provide_lp_payloadB, 300000000);
+
+        send_raw_message(provide_lp_msgA, 1);
+        send_raw_message(provide_lp_msgB, 1);
+}
+
+;; call acc provide logic
+
+cell create_provide_lp_acc_notify_msg(slice proxy_acc_addr, int qID) impure inline {
+    cell message = 
+        begin_cell()
+            .store_uint(0x18, 6)
+            .store_slice(proxy_acc_addr) 
+            .store_coins(0) 
+            .store_uint(0, 107)
+            .store_uint(opr::add_lp)
+            .store_uint(qID, 64)
+        .end_cell();
+    
+    return message;
+}
