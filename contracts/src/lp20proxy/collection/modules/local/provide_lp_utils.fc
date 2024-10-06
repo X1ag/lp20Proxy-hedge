@@ -44,7 +44,6 @@ cell create_provide_lp_message(int qID, int jetton_amount, int fwd_amount, cell 
         cell router_walletB = calculate_user_jetton_wallet_address(stg::stonfi_router_addr, stg::tokenB_master, stg::tokenB_wallet_code);
 
         ;; 0.24 TON as forward jetton amount
-
         cell addi_payload =
             begin_cell()
                 .store_uint(flow_label, 32)
@@ -52,10 +51,10 @@ cell create_provide_lp_message(int qID, int jetton_amount, int fwd_amount, cell 
             .end_cell();
 
         cell provide_lp_payloadA = create_provide_lp_payload(router_walletB, addi_payload);
-        cell provide_lp_msgA = create_provide_lp_message(ctx::qryID, amountA, 240000000, provide_lp_payloadA, 300000000);
+        cell provide_lp_msgA = create_provide_lp_message(ctx::qryID, (amountA * 80) / 100, 240000000, provide_lp_payloadA, 300000000);
 
         cell provide_lp_payloadB = create_provide_lp_payload(router_walletA, addi_payload);
-        cell provide_lp_msgB = create_provide_lp_message(ctx::qryID, amountB, 240000000, provide_lp_payloadB, 300000000);
+        cell provide_lp_msgB = create_provide_lp_message(ctx::qryID, (amountB * 80) / 100, 240000000, provide_lp_payloadB, 300000000);
 
         send_raw_message(provide_lp_msgA, 1);
         send_raw_message(provide_lp_msgB, 1);

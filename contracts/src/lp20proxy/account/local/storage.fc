@@ -1,6 +1,7 @@
 
 global slice stg::collection_addr;
 global slice stg::user_addr;
+global slice stg::pool_addr;
 
 global int stg::token_amountA;
 global int stg::token_amountB;
@@ -13,6 +14,7 @@ global int stg::flag_tokens;
 global int stg::flag_lp;
 global int stg::flag_swap;
 global int stg::flag_ask_lp;
+global int stg::flag_onchain_info;
 
 
 () load_std() impure inline {
@@ -20,6 +22,7 @@ global int stg::flag_ask_lp;
 
     stg::user_addr = smc_stg~load_msg_addr();  
     stg::collection_addr = smc_stg~load_msg_addr();
+    stg::pool_addr = smc_stg~load_msg_addr();
 
     slice coin_slice = smc_stg~load_ref().begin_parse();
 
@@ -29,17 +32,22 @@ global int stg::flag_ask_lp;
     stg::lp_tokens_amount = coin_slice~load_coins();
     stg::asked_lp_amount = coin_slice~load_coins();
 
+    slice addi_slice = smc_stg~load_ref().begin_parse();
+    stg::onchain_info_lp = addi_slice~load_msg_addr();
+
     stg::flag_tokens = smc_stg~load_uint(1);
     stg::flag_lp = smc_stg~load_uint(1);
     stg::flag_swap = smc_stg~load_uint(1);
     stg::flag_ask_lp = smc_stg~load_uint(1);
+    stg::flag_onchain_info = smc_stg~load_uint(1);
 }
 
 () set_std() impure inline {
     set_data(
         begin_cell()
             .store_slice(stg::user_addr)
-            .store_slice(stg::collection_addr) 
+            .store_slice(stg::collection_addr)
+            .store_slice(stg::pool_addr) 
             .store_ref(
                 begin_cell()
                     .store_coins(stg::token_amountA)
@@ -49,10 +57,16 @@ global int stg::flag_ask_lp;
                     .store_coins(stg::asked_lp_amount)
                 .end_cell()
             )
+            .store_ref(
+                begin_cell()
+                    .store_slice(stg::onchain_info_lp)
+                .end_cell()
+            )
             .store_uint(stg::flag_tokens, 1)
             .store_uint(stg::flag_lp, 1)
             .store_uint(stg::flag_swap, 1)
             .store_uint(stg::flag_ask_lp, 1)
+            .store_uint(stg::flag_onchain_info)
         .end_cell()
     );
 }

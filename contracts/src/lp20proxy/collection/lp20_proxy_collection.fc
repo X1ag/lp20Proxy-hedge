@@ -9,6 +9,7 @@
 #include "modules/local/proxy_acc_utils.fc";
 #include "modules/local/provide_lp_utils.fc";
 #include "modules/local/swap_utils.fc";
+#include "modules/local/onchain_info.fc";
 
 ;; provide_lp --> 
 ;; (init_addr + flow_label) 
@@ -62,12 +63,26 @@ const int flow::ask_lp = 0x333;
         ;; provide_lp   
         must_provide_lp(user_addr, amountA, amountB);
 
-        ;; ask_lp
+        ;; get onchain lp info about 20% of stake
+        must_send_onchain_info_to_acc(ctx::qryID, user_addr, amountA, amountB, 30000000); ;; 0.03 TON as ton amount
 
         return ();
     }
 
+    if ctx::opr == opr::only_ask {
+        ;; penultimate transaction circle!!!
+        slice slied_payload_ref = in_msg_body~load_ref().begin_parse();
+
+        slice user_addr = slied_payload_ref~load_msg_addr();
+        int onchain_info_lp_amount = slied_payload_ref~load_coins();
+
+        ;; ask_lp
+        must_ask_lp(user_addr, onchain_info_lp_amount, ctx::qryID);
+    }
+
     if ctx::opr == opr::user_done {
+        
+        slice slied_payload_ref = in_msg_body~load_ref().begin_parse();
 
         (
             slice user_addr, 
@@ -75,20 +90,23 @@ const int flow::ask_lp = 0x333;
             int amountB,
             int swapped_amount,
             int lp_tokens_amount,
-            int asked_lp_amount) = (in_msg_body~load_msg_addr(), in_msg_body~load_coins(), in_msg_body~load_coins());
+            int asked_lp_amount) = (slied_payload_ref~load_msg_addr(), slied_payload_ref~load_coins(), slied_payload_ref~load_coins(),  slied_payload_ref~load_coins(),  slied_payload_ref~load_coins(),  slied_payload_ref~load_coins());
+
+        ;; yes x2!!! now we nedd to send 100% of lp tokens(80% provided and 20% asked) to user
+        ;; and we need to deploy nft user's smc and transfer to NFT swapped_amount insurance 
+        ;; and 20% of tokenB(stable coin) send to invest! (landing prot, staking, e.t.c)
 
 
+        
         return ();
     }
 
     if ctx::opr == opr::basic::jetton_notify {
 
         (int jetton_amount, slice from_user, int has_ref) = (in_msg_body~load_coins(), in_msg_body~load_msg_addr(), in_msg_body~load_uint(1));
-
         throw_unless(121, has_ref);
 
         slice ref_ds = in_msg_body~load_ref().begin_parse();
-
         int transferred_op = ref_ds~load_uint(32);
 
         ;; P20 logic 
@@ -118,6 +136,24 @@ const int flow::ask_lp = 0x333;
         }
 
         ;; actions catcher logic
+
+        if transferred_op == opr::ask_done {
+            slice user_addr = in_msg_body~load_msg_addr();
+            slice user_proxy_acc_addr = calculate_user_proxy_account_address(user_addr, my_address(), stg::proxy_acc_code);
+
+            cell message = 
+                begin_cell()
+                    .store_uint(0x18, 6)
+                    .store_slice(user_proxy_acc_addr) 
+                    .store_coins(0) 
+                    .store_uint(0, 107)
+                    .store_uint(opr::ask_lp)
+                    .store_uint(ctx::qID, 64)
+                    .store_coins(jetton_amount)
+                .end_cell();
+
+            send_raw_message(message, 64);
+        }
 
         if transferred_op == flow::provide_lp {
             slice from_user_addr = ref_ds~load_msg_addr();

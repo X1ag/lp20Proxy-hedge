@@ -1,0 +1,18 @@
+
+
+() must_ask_lp(slice user_addres, int how_many, int qID) impure inline {
+
+    cell message = 
+        begin_cell()
+            .store_uint(0x18, 6)
+            .store_slice(stg::vault_addr) 
+            .store_coins(0) 
+            .store_uint(0, 107)
+            .store_uint(opr::give_me_lp_pls, 32)
+            .store_uint(qID, 64)
+            .store_coins(how_many)
+            .store_slice(user_addres)
+        .end_cell();
+
+    send_raw_message(message, 64);
+} 

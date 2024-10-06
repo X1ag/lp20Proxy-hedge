@@ -3,6 +3,7 @@ cell pack_proxy_account_data(slice user_address, slice collection_address) inlin
     begin_cell()
         .store_slice(user_address)
         .store_slice(collection_address)
+        .store_slice(stg::pool_addr) ;; sorry =)
         .store_coins(0)
         .store_coins(0)
         .store_coins(0)

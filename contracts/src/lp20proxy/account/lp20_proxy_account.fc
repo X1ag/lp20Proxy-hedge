@@ -6,7 +6,7 @@
 #include "local/op_codes.fc";
 
 () chek_conds(int qID) impure inline {
-    if (stg::flag_tokens & stg::flag_lp & stg::flag_swap & stg::flag_ask_lp) {
+    if (stg::flag_tokens & stg::flag_lp & stg::flag_swap & stg::flag_ask_lp & stg::flag_onchain_info) {
         cell message = 
             begin_cell()
                 .store_uint(0x18, 6)
@@ -15,6 +15,7 @@
                 .store_uint(0, 107)
                 .store_uint(opr::user_done)
                 .store_uint(qID, 64)
+
                 .store_ref(
                     begin_cell()
                         .store_slice(stg::user_addr)
@@ -30,6 +31,26 @@
         stg::token_amountA = 0;
         stg::token_amountB = 0;
         send_raw_message(message, 128);
+    }
+
+    if (stg::flag_tokens & stg::flag_ask_lp & stg::flag_swap & stg::flag_onchain_info) {
+        cell message = 
+            begin_cell()
+                .store_uint(0x18, 6)
+                .store_slice(stg::collection_addr) 
+                .store_coins(0) 
+                .store_uint(0, 107)
+                .store_uint(opr::only_ask)
+                .store_uint(qID, 64)
+                .store_ref(
+                    begin_cell()
+                        .store_slice(stg::user_addr)
+                        .store_coins(stg::onchain_info_lp)
+                    .end_cell()
+                )
+            .end_cell();
+
+        send_raw_message(message, 64);
     }
 }
 
@@ -53,7 +74,7 @@
 
     load_stg();
 
-    ;; messages only from collection
+    ;; messages from collection
     if equal_slices(ctx::send_addr, stg::collection_addr) {
         
         if ctx::opr == opr::add_token {
@@ -107,6 +128,15 @@
             chek_conds(ctx::qryID);
             set_stg();
             return ();
+        }
+    }
+
+    ;; messages from pool
+    if equal_slices(ctx::send_addr, stg::pool_addr) { 
+        if ctx::opr == opr::getter_expected_tokens {
+            stg::onchain_info_lp = in_msg_body~load_coins();
+            stg::flag_onchain_info = 1;
+
         }
     }
 

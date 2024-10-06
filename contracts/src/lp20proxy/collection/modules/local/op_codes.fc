@@ -5,7 +5,6 @@ const int opr::basic::jetton_notify = 0x7362d09c;
 
 
 ;; dex operations
-
 const int opr::dex::provide_lp = 0xfcf9e58f;
 const int opr::dex::swap = 0x25938561;
 
@@ -16,8 +15,13 @@ const int opr::add_swap = 0x678fa6;
 const int opr::add_lp = 0x891fa7;
 const int opr::ask_lp = 0x911fa1;
 
+const int opr::give_me_lp_pls = 0x010abc;
+const int opr::only_ask = 0x7abaf1ac;
+
 const int opr::user_done = 0xf1a5572;
 
 const int opr::add_token_ok = 0xa8374;
+
+const int opr::ask_done = 0x1325;
 
 const int opr::make_hedge = "operation::make_hedge"c;

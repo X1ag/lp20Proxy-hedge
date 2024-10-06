@@ -65,7 +65,7 @@
     }
 
     if (op == getter_expected_tokens) { 
-        (slice user_address, int amount0, int amount1) = (in_msg_body~load_msg_addr(), in_msg_body~load_coins(), in_msg_body~load_coins());
+        (slice dest_addr, int amount0, int amount1) = (in_msg_body~load_msg_addr(), in_msg_body~load_coins(), in_msg_body~load_coins());
 
         int to_mint0 = (amount1 * storage::total_supply_lp) / storage::reserve0;
         int to_mint1 = (amount0 * storage::total_supply_lp) / storage::reserve1;
@@ -76,7 +76,7 @@
             .store_uint(getter_expected_tokens, 32)
             .store_uint(query_id, 64)
             .store_coins(liquidity);
-        send_payload(sender_address, payload.end_cell());
+        send_payload(dest_addr, payload.end_cell());
         return (true);
     }
 

@@ -1,0 +1,27 @@
+
+global int stg::init?;
+global int stg::lp_token_balance;
+global slice stg::collection_addr;
+global slice stg::my_lp_jetton_wallet;
+
+() load_stg() impure inline {
+    slice smc_stg = get_data().begin_parse();
+    stg::lp_token_balance = smc_stg~load_coins();
+    stg::collection_addr = smc_stg~load_msg_addr();
+    if stg::init? == 0 {
+        stg::my_lp_jetton_wallet = null();
+    } elseif stg::init? == 1 {
+        stg::my_lp_jetton_wallet = smc_stg~load_msg_addr();
+    }
+
+}
+
+() set_stg() impure inline {
+    set_data(
+        begin_cell()
+            .store_coins(stg::lp_token_balance)
+            .store_slice(stg::collection_addr)
+            .store_slice(stg::my_lp_jetton_wallet)
+        .end_cell()
+    );
+}
