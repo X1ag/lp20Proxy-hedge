@@ -1,12 +1,22 @@
-(builder) create_simple_transfer_body(int query_id, int fwd_amount, int jetton_amount, slice to) inline {
-    return 
+(builder) create_simple_transfer_body(int query_id, int fwd_amount, int jetton_amount, slice to, cell addi_ref_bodycell) inline {
+
+    builder msg_body =         
         begin_cell()
             .store_uint(0xf8a7ea5, 32)
             .store_uint(query_id, 64)
             .store_coins(jetton_amount)
             .store_slice(to) ;; to_owner_address
             .store_slice(to)
-            .store_uint(0, 1)
-            .store_coins(fwd_amount) ;; forward_ton_amount
-            .store_uint(0, 1);
+            .store_uint(0, 1) ;; null custom payload
+            .store_coins(fwd_amount); ;; forward_ton_amount
+
+
+    if cell_null?(addi_ref_bodycell) {
+        msg_body = msg_body.store_uint(0, 1);
+    } else {
+        msg_body = msg_body.store_uint(1, 1);
+        msg_body = msg_body.store_ref(addi_ref_bodycell);
+    }
+
+    return msg_body;
 }

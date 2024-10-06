@@ -70,7 +70,7 @@
         .store_uint(query_id, 64);
       send_message_nobounce(gas, response_address, body.end_cell(), IGNORE_ERRORS);
     }
-    call_pay_to(gas, mode, query_id, from_address, burn_ok, amount0_out, amount1_out);
+    call_pay_to(gas, mode, query_id, from_address, burn_ok, amount0_out, amount1_out, "");
     save_storage();
     return ();
   }
@@ -78,7 +78,7 @@
   if (op == cb_add_liquidity) {
     ;; Sent by user's lp_account after adding liquidity
     ;; not throwable
-    (int tot_am0, int tot_am1, slice user_address, int min_lp_out) = (in_msg_body~load_coins(), in_msg_body~load_coins(), in_msg_body~load_msg_addr(), in_msg_body~load_coins());
+    (int tot_am0, int tot_am1, slice user_address, int min_lp_out, int has_ref) = (in_msg_body~load_coins(), in_msg_body~load_coins(), in_msg_body~load_msg_addr(), in_msg_body~load_coins(), in_msg_body~load_uint(1));
     cell acc_state_init = calculate_lp_account_state_init(user_address, my_address(), storage::lp_account_code); 
     throw_unless(INVALID_CALLER, equal_slices(calculate_lp_account_address(acc_state_init), sender_address));
 
@@ -115,7 +115,12 @@
       ;; state_init needed since lp_account might be already destroyed
       send_message_with_stateinit(0, sender_address, acc_state_init, body.end_cell(), CARRY_REMAINING_GAS + IGNORE_ERRORS);
     } else {
-      _mint_lp(query_id, to, liquidity);
+      ;; 0.15 TON as jetton forward amount
+      cell ref_bodycell = null();
+      if has_ref {
+        ref_bodycell = in_msg_body~load_ref();
+      } 
+      _mint_lp(query_id, to, liquidity, 15000000, has_ref, ref_bodycell); 
       save_storage();
     }
     return ();
@@ -126,7 +131,7 @@
     ;; throwable
     (int tot_am0, int tot_am1, slice user_address) = (in_msg_body~load_coins(), in_msg_body~load_coins(), in_msg_body~load_msg_addr());
     throw_unless(INVALID_CALLER, equal_slices(calculate_user_lp_account_address(user_address, my_address(), storage::lp_account_code), sender_address));
-    call_pay_to(0, CARRY_REMAINING_GAS, query_id, user_address, refund_ok, tot_am0, tot_am1);
+    call_pay_to(0, CARRY_REMAINING_GAS, query_id, user_address, refund_ok, tot_am0, tot_am1, "");
     return ();
   }
 
@@ -153,8 +158,8 @@
     throw_unless(ZERO_OUTPUT, (reward0 > 0) & (reward1 > 0));
     throw_unless(ZERO_OUTPUT, (storage::collected_token0_protocol_fee > 0) & (storage::collected_token1_protocol_fee > 0));
 
-    call_pay_to(gas * 3, NORMAL, query_id, storage::protocol_fee_address, 0, storage::collected_token0_protocol_fee, storage::collected_token1_protocol_fee); ;; revert if fails
-    call_pay_to(gas, IGNORE_ERRORS, query_id, sender_address, 0, reward0, reward1);
+    call_pay_to(gas * 3, NORMAL, query_id, storage::protocol_fee_address, 0, storage::collected_token0_protocol_fee, storage::collected_token1_protocol_fee, ""); ;; revert if fails
+    call_pay_to(gas, IGNORE_ERRORS, query_id, sender_address, 0, reward0, reward1, "");
 
     storage::collected_token0_protocol_fee = 0;
     storage::collected_token1_protocol_fee = 0;

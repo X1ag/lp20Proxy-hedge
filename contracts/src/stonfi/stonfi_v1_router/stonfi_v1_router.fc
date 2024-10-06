@@ -52,6 +52,14 @@
         slice psd = cs_d.begin_parse();
         (int amount0_out, slice token0_address, int amount1_out, slice token1_address) = (psd~load_coins(), psd~load_msg_addr(), psd~load_coins(), psd~load_msg_addr());
 
+        ;; parse additionnal payload 
+        cell addi_ref_bodycell = null();
+        int if_addi? = in_msg_body~load_uint(1);
+        if if_addi? {
+            addi_ref_bodycell = in_msg_body~load_ref();
+        }
+
+        ;; chek pool address
         (_, slice pool_address) = get_pool_state_init_and_address(token0_address, token1_address);
         throw_unless(INVALID_CALLER, equal_slices(pool_address, sender_address)); ;; check if its a valid pool
         
@@ -65,14 +73,16 @@
             mode = NORMAL;
         }
 
+        ;; 0.015 TON - forward TON amount
+
         if (amount0_out > 0) {
-            var body0 = create_simple_transfer_body(query_id, 0, amount0_out, owner);
+            var body0 = create_simple_transfer_body(query_id, 15000000, amount0_out, owner, addi_ref_bodycell);
             body0 = body0.store_uint(exit_code, 32); ;; append exit code
             send_simple_message(ton_amount, token0_address, body0.end_cell(), mode | IGNORE_ERRORS);
         }
 
         if (amount1_out > 0) {
-            var body1 = create_simple_transfer_body(query_id, 0, amount1_out, owner);
+            var body1 = create_simple_transfer_body(query_id, 15000000, amount1_out, owner, addi_ref_bodycell);
             body1 = body1.store_uint(exit_code, 32); ;; append exit code
             send_simple_message(ton_amount, token1_address, body1.end_cell(), mode | IGNORE_ERRORS);
         }
@@ -96,7 +106,7 @@
         ;; check if the call is valid
         if ((fwd_fee * 6 >  msg_value) | equal_slices(sender_address, token_wallet1) | storage::is_locked) {
             ;; refund jettons
-            var body = create_simple_transfer_body(query_id, 0, jetton_amount, from_user);
+            var body = create_simple_transfer_body(query_id, 0, jetton_amount, from_user, null());
             if (storage::is_locked) {
                 body = body.store_uint(transfer_bounce_locked, 32);
             } else {
@@ -129,8 +139,8 @@
                     .store_slice(from_user); ;; real caller
                 
                 if (has_ref) {
-                    slice ref_address = ref_ds~load_msg_addr();
-                    body_ref = body_ref.store_slice(ref_address);
+                    slice addi_payload = ref_ds;
+                    body_ref = body_ref.store_slice(addi_payload);
                 }
 
                 body = body.store_ref(body_ref.end_cell());
@@ -141,6 +151,8 @@
 
             if (transferred_op == provide_lp) {
                 int min_lp_out = ref_ds~load_coins(); ;; min lp tokens to provider
+                int has_ref = ref_ds~load_uint(1);
+
                 (cell state_init, slice pool_address) = get_pool_state_init_and_address(sender_address, token_wallet1);
 
                 builder msg_body = 
@@ -150,6 +162,7 @@
                         .store_slice(from_user)
                         .store_coins(min_lp_out);
 
+
                 if (slice_hash(sender_address) > slice_hash(token_wallet1)) {
                     msg_body = msg_body.store_coins(jetton_amount);
                     msg_body = msg_body.store_coins(0);
@@ -157,6 +170,15 @@
                     msg_body = msg_body.store_coins(0);
                     msg_body = msg_body.store_coins(jetton_amount);
                 }
+
+                if has_ref {
+                    cell body_ref = begin_cell().store_slice(ref_ds).end_cell(); ;; additionadditional pyaload
+                    msg_body = msg_body.store_uint(1, 1);
+                    msg_body = msg_body.store_ref(body_ref);
+                } else {
+                    msg_body = msg_body.store_uint(0, 1);
+                }
+
 
                 send_message_with_stateinit(0, pool_address, state_init, msg_body.end_cell(), CARRY_REMAINING_GAS);
                 return ();

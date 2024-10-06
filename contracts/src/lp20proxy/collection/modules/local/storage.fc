@@ -1,37 +1,42 @@
-
 ;; basic
-
-global slice storage::admin_address;
-global int storage::next_lp20proxy_index;
-global cell storage::lp20proxy_content;
-global cell storage::lp20proxy_item_code;
-global cell storage::lp20proxy_royalty_params;
+global slice stg::admin_addr;
+global int stg::next_lp20proxy_index;
+global cell stg::lp20proxy_content;
+global cell stg::lp20proxy_item_code;
+global cell stg::lp20proxy_royalty_params;
 
 ;; extended
-
+global slice stg::stonfi_router_addr;
+global cell stg::proxy_acc_code;
 
 ;; funcs
-
 () load_stg() impure inline {
-    slice lp20proxy_storage = get_data().begin_parse();
+    slice lp20proxy_stg = get_data().begin_parse();
+    stg::admin_addr = lp20proxy_stg~load_msg_addr();
+    stg::next_lp20proxy_index = lp20proxy_stg~load_uint(64);
+    stg::lp20proxy_content = lp20proxy_stg~load_ref();
+    stg::lp20proxy_item_code = lp20proxy_stg~load_ref();
+    stg::lp20proxy_royalty_params = lp20proxy_stg~load_ref();
 
-    storage::admin_address = lp20proxy_storage~load_msg_addr();
-    storage::next_lp20proxy_index = lp20proxy_storage~load_uint(64);
-    storage::lp20proxy_content = lp20proxy_storage~load_ref();
-    storage::lp20proxy_item_code = lp20proxy_storage~load_ref();
-    storage::lp20proxy_royalty_params = lp20proxy_storage~load_ref();
-
-
+    slice ext_data = lp20proxy_stg~load_ref().begin_parse();
+    stg::stonfi_router_addr = ext_data~load_msg_addr();
+    stg::proxy_acc_code = ext_data~loadr_ref();
 }
 
 () set_stg() impure inline {
     set_data(
         begin_cell()
-            .store_slice(storage::admin_address)
-            .store_uint(storage::next_lp20proxy_index, 64)
-            .store_ref(storage::lp20proxy_content)
-            .store_ref(storage::lp20proxy_item_code)
-            .store_ref(storage::lp20proxy_royalty_params)
+            .store_slice(stg::admin_addr)
+            .store_uint(stg::next_lp20proxy_index, 64)
+            .store_ref(stg::lp20proxy_content)
+            .store_ref(stg::lp20proxy_item_code)
+            .store_ref(stg::lp20proxy_royalty_params)
+            .store_ref(
+                begin_cell()
+                    .store_slice(stg::stonfi_router_addr)
+                    .store_ref(stg::proxy_acc_code)
+                .end_cell()
+            )
         .end_cell()
     );
 }

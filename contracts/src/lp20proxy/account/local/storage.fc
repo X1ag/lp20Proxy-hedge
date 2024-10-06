@@ -1,0 +1,36 @@
+
+global slice stg::collection_addr;
+global slice stg::user_addr;
+
+global int stg::token_amountA;
+global int stg::token_amountB;
+
+global int stg::flag_lp;
+global int stg::flag_swap;
+global int stg::flag_ask_lp;
+
+() load_std() impure inline {
+    slice smc_stg = get_data().begin_parse();
+
+    stg::user_addr = smc_stg~load_msg_addr();  
+    stg::collection_addr = smc_stg~load_msg_addr();
+    stg::token_amountA = smc_stg~load_coins();
+    stg::token_amountB = smc_stg~load_coins();
+    stg::flag_lp = smc_stg~load_uint(1);
+    stg::flag_swap = smc_stg~load_uint(1);
+    stg::flag_ask_lp = smc_stg~load_uint(1);
+}
+
+() set_std() impure inline {
+    set_data(
+        begin_cell()
+            .store_slice(stg::user_addr)
+            .store_slice(stg::collection_addr)
+            .store_coins(stg::token_amountA)
+            .store_coins(stg::token_amountB)
+            .store_uint(stg::flag_lp, 1)
+            .store_uint(stg::flag_swap, 1)
+            .store_uint(stg::flag_ask_lp, 1)
+        .end_cell()
+    );
+}

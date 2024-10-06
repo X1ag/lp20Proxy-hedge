@@ -19,6 +19,7 @@
         int ref_fee_out = 0;
         int tmp_am_0 = 0;
         int tmp_am_1 = 0;
+        slice addi_payload = "";
         slice ref_address = addr_none();
 
         int mode = CARRY_REMAINING_GAS;
@@ -26,9 +27,14 @@
 
         ;; maybe referral address
         if (has_ref) {
-            mode = NORMAL;
-            gas = (msg_value - get_gas_fee(25000, WORKCHAIN)) / 2;
-            ref_address = ref_body_slice~load_msg_addr();
+            int if_ref_addr = ref_body_slice~load_uint(1);
+            if (if_ref_addr) {
+                mode = NORMAL;
+                gas = (msg_value - get_gas_fee(25000, WORKCHAIN)) / 2;
+                ref_address = ref_body_slice~load_msg_addr();
+                addi_payload = ref_body_slice;
+            }
+           addi_payload = ref_body_slice;
         }
 
         if (equal_slices(token_wallet, storage::token0_address)) { 
@@ -41,7 +47,7 @@
 
         ;; refund if not enough liquidity or not enough output or output less than min_out
         if ((storage::total_supply_lp <= 0) | ((out <= 0) | (min_out >= out))) {
-            call_pay_to(0, CARRY_REMAINING_GAS, query_id, from_real_user, swap_refund_no_liq, tmp_am_0, tmp_am_1);
+            call_pay_to(0, CARRY_REMAINING_GAS, query_id, from_real_user, swap_refund_no_liq, tmp_am_0, tmp_am_1, addi_payload);
             return ();
         }
 
@@ -53,14 +59,15 @@
 
             ;; refund if not enough balance or exceed max balance
             if ((storage::reserve0 > MAX_COINS) | (storage::reserve1 <= 0)) {
-                call_pay_to(0, CARRY_REMAINING_GAS, query_id, from_real_user, swap_refund_reserve_err, tmp_am_0, tmp_am_1);
+                call_pay_to(0, CARRY_REMAINING_GAS, query_id, from_real_user, swap_refund_reserve_err, tmp_am_0, tmp_am_1, addi_payload);
                 return ();
             }
 
             if (mode == NORMAL) { ;; 2 messages, pay referral
-                call_pay_to(gas, mode | IGNORE_ERRORS, query_id, ref_address, swap_ok_ref, 0, ref_fee_out); 
+                call_pay_to(gas, mode | IGNORE_ERRORS, query_id, ref_address, swap_ok_ref, 0, ref_fee_out, addi_payload); 
             }
-            call_pay_to(gas, mode, query_id, from_user_address, swap_ok, 0, out); 
+
+            call_pay_to(gas, mode, query_id, from_user_address, swap_ok, 0, out, addi_payload); 
         } else {    
             ;; swap token1 for token0
             storage::reserve0 -= (out + protocol_fee_out + ref_fee_out);
@@ -69,21 +76,21 @@
 
             ;; refund if not enough balance or exceed max balance
             if ((storage::reserve1 > MAX_COINS) | (storage::reserve0 <= 0) ){
-                call_pay_to(0, CARRY_REMAINING_GAS, query_id, from_real_user, swap_refund_reserve_err, tmp_am_0, tmp_am_1);
+                call_pay_to(0, CARRY_REMAINING_GAS, query_id, from_real_user, swap_refund_reserve_err, tmp_am_0, tmp_am_1, addi_payload);
                 return ();
             }
 
             if (mode == NORMAL) { ;; 2 messages, pay referral
-                call_pay_to(gas, mode | IGNORE_ERRORS, query_id, ref_address, swap_ok_ref, ref_fee_out, 0); 
+                call_pay_to(gas, mode | IGNORE_ERRORS, query_id, ref_address, swap_ok_ref, ref_fee_out, 0, addi_payload); 
             }
-            call_pay_to(gas, mode, query_id, from_user_address, swap_ok, out, 0); 
+            call_pay_to(gas, mode, query_id, from_user_address, swap_ok, out, 0, addi_payload); 
         }
         save_storage();
         return ();
     }
 
     if (op == provide_lp) { 
-        (slice owner_addr, int min_lp_out, int amount0, int amount1) = (in_msg_body~load_msg_addr(), in_msg_body~load_coins(), in_msg_body~load_coins(), in_msg_body~load_coins());
+        (slice owner_addr, int min_lp_out, int amount0, int amount1, int has_ref) = (in_msg_body~load_msg_addr(), in_msg_body~load_coins(), in_msg_body~load_coins(), in_msg_body~load_coins(), in_msg_body~load_uint(1));
 
         cell state_init = calculate_lp_account_state_init(owner_addr, my_address(), storage::lp_account_code); 
         slice to_lp_account_address = calculate_lp_account_address(state_init);
@@ -95,6 +102,15 @@
             .store_coins(amount0)
             .store_coins(amount1)
             .store_coins(min_lp_out);
+
+        if has_ref {
+            cell ref_bodycell = in_msg_body~load_ref(); 
+            body = body.store_uint(1, 1);
+            body = body.store_ref(ref_bodycell);
+        } else {
+            body = body.store_uint(0, 1);
+        }
+
         send_message_with_stateinit(0, to_lp_account_address, state_init, body.end_cell(), CARRY_REMAINING_GAS);
         return ();
     }
@@ -108,7 +124,7 @@
     if (op == collect_fees) {
         throw_unless(NO_LIQUIDITY, (storage::collected_token0_protocol_fee > 0) & (storage::collected_token1_protocol_fee > 0));
         throw_unless(INVALID_RECIPIENT, ~ equal_slices(storage::protocol_fee_address, HOLE_ADDRESS));
-        call_pay_to(0, CARRY_REMAINING_GAS, query_id, storage::protocol_fee_address, 0, storage::collected_token0_protocol_fee, storage::collected_token1_protocol_fee);
+        call_pay_to(0, CARRY_REMAINING_GAS, query_id, storage::protocol_fee_address, 0, storage::collected_token0_protocol_fee, storage::collected_token1_protocol_fee, "");
         storage::collected_token0_protocol_fee = 0;
         storage::collected_token1_protocol_fee = 0;
         save_storage();

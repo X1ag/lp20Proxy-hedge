@@ -1,5 +1,12 @@
+;; basic
+const int opr::basic::transfer = 0xf8a7ea5;
+const int opr::basic::excess = 0xd53276db;
+const int opr::basic::jetton_notify = 0x7362d09c;
 
-const int opr::excess = 0xd53276db;
-const int opr::jetton_notify = 0x7362d09c;
+;; extended
+const int opr::add_token = 0x123fa5;
+const int opr::add_swap = 0x678fa6;
+const int opr::add_lp = 0x891fa7;
 
+const int opr::add_token_ok = 0xa8374;
 const int opr::make_hedge = "operation::make_hedge"c;

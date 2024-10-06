@@ -4,7 +4,7 @@
 
     if (op == add_liquidity) { 
 
-        (int new_amount0, int new_amount1, int min_lp_out) = (in_msg_body~load_coins(), in_msg_body~load_coins(), in_msg_body~load_coins());
+        (int new_amount0, int new_amount1, int min_lp_out, int has_ref) = (in_msg_body~load_coins(), in_msg_body~load_coins(), in_msg_body~load_coins(), in_msg_body~load_uint(1));
 
         storage::amount0 += new_amount0;
         storage::amount1 += new_amount1;
@@ -18,6 +18,15 @@
                     .store_coins(storage::amount1)
                     .store_slice(storage::user_address)
                     .store_coins(min_lp_out);
+            
+            if has_ref {
+                cell ref_bodycell = in_msg_body~load_ref();
+                msg = msg.store_uint(1, 1);
+                msg = msg.store_ref(ref_bodycell);
+            } else {
+                msg = msg.store_uint(0, 1);
+            }
+
             send_payload(storage::pool_address, msg.end_cell());
             storage::amount0 = 0;
             storage::amount1 = 0;

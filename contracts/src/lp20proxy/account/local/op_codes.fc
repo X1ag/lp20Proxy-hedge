@@ -1,0 +1,6 @@
+
+const int opr::add_token = 0x123fa5;
+const int opr::add_swap = 0x678fa6;
+const int opr::add_lp = 0x891fa7;
+
+const int opr::add_token_ok = 0xa8374;

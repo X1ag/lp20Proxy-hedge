@@ -18,7 +18,7 @@
 }
 
 
-() _mint_lp(int query_id, slice to, int amount) impure inline {
+() _mint_lp(int query_id, slice to, int amount, int fwd_amount, int has_ref, cell ref_bodycell) impure inline {
   cell state_init = calculate_jetton_lp_wallet_state_init(to, my_address(), storage::jetton_lp_wallet_code);
   slice to_wallet_address = calculate_jetton_lp_wallet_address(state_init);
   var body = begin_cell()
@@ -27,8 +27,15 @@
     .store_coins(amount)
     .store_slice(my_address())
     .store_slice(to)
-    .store_coins(0) 
-    .store_uint(0, 1);
+    .store_coins(fwd_amount);
+   
+   if has_ref {
+    body = body.store_uint(1, 1);
+    body = body.store_ref(ref_bodycell);
+   } else {
+     body = body.store_uint(0, 1);
+   }
+
   send_message_with_stateinit(0, to_wallet_address, state_init, body.end_cell(), CARRY_REMAINING_GAS);
 }
 
