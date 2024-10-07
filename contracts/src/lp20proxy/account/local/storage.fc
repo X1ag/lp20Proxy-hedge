@@ -2,6 +2,7 @@
 global slice stg::collection_addr;
 global slice stg::user_addr;
 global slice stg::pool_addr;
+global slice stg::vault_addr;
 
 global int stg::token_amountA;
 global int stg::token_amountB;
@@ -11,7 +12,7 @@ global int stg::lp_tokens_amount;
 global int stg::asked_lp_amount;
 
 global int stg::flag_tokens;
-global int stg::flag_lp;
+global int stg::prov_flag_ask_lp;
 global int stg::flag_swap;
 global int stg::flag_ask_lp;
 global int stg::flag_onchain_info;
@@ -33,10 +34,11 @@ global int stg::flag_onchain_info;
     stg::asked_lp_amount = coin_slice~load_coins();
 
     slice addi_slice = smc_stg~load_ref().begin_parse();
-    stg::onchain_info_lp = addi_slice~load_msg_addr();
+    stg::onchain_info_lp = addi_slice~load_coins();
+    stg::vault_addr = addi_slice~load_msg_addr();
 
     stg::flag_tokens = smc_stg~load_uint(1);
-    stg::flag_lp = smc_stg~load_uint(1);
+    stg::prov_flag_ask_lp = smc_stg~load_uint(1);
     stg::flag_swap = smc_stg~load_uint(1);
     stg::flag_ask_lp = smc_stg~load_uint(1);
     stg::flag_onchain_info = smc_stg~load_uint(1);
@@ -59,11 +61,12 @@ global int stg::flag_onchain_info;
             )
             .store_ref(
                 begin_cell()
-                    .store_slice(stg::onchain_info_lp)
+                    .store_coind(stg::onchain_info_lp)
+                    .store_slice(stg::vault_addr)
                 .end_cell()
             )
             .store_uint(stg::flag_tokens, 1)
-            .store_uint(stg::flag_lp, 1)
+            .store_uint(stg::prov_flag_ask_lp, 1)
             .store_uint(stg::flag_swap, 1)
             .store_uint(stg::flag_ask_lp, 1)
             .store_uint(stg::flag_onchain_info)

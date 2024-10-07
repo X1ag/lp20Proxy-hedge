@@ -2,14 +2,17 @@
 #include "../../../includes/common/context.fc";
 #include "../../../includes/common/messages.func";
 
-#include "modules/local/storage.fc";
-#include "modules/local/errors.fc";
-#include "modules/local/op_codes.fc";
-#include "modules/local/token_utils.fc";
-#include "modules/local/proxy_acc_utils.fc";
-#include "modules/local/provide_lp_utils.fc";
-#include "modules/local/swap_utils.fc";
-#include "modules/local/onchain_info.fc";
+#include "local/storage.fc";
+#include "local/errors.fc";
+#include "local/op_codes.fc";
+#include "local/token_utils.fc";
+
+#include "../../../includes/common/proxy_acc_utils.fc";
+
+#include "local/provide_lp_utils.fc";
+#include "local/swap_utils.fc";
+#include "local/onchain_info.fc";
+#include "local/ask_lp_utils.fc";
 
 ;; provide_lp --> 
 ;; (init_addr + flow_label) 
@@ -76,6 +79,10 @@ const int flow::ask_lp = 0x333;
         slice user_addr = slied_payload_ref~load_msg_addr();
         int onchain_info_lp_amount = slied_payload_ref~load_coins();
 
+        slice user_proxy_acc_addr = calculate_user_proxy_account_address(user_addr, my_address(), stg::proxy_acc_code);
+
+        throw_unless(901, equal_slices(user_proxy_acc_addr, ctx::send_addr));
+
         ;; ask_lp
         must_ask_lp(user_addr, onchain_info_lp_amount, ctx::qryID);
     }
@@ -137,7 +144,7 @@ const int flow::ask_lp = 0x333;
 
         ;; actions catcher logic
 
-        if transferred_op == opr::ask_done {
+        if transferred_op == flow::ask_lp {
             slice user_addr = in_msg_body~load_msg_addr();
             slice user_proxy_acc_addr = calculate_user_proxy_account_address(user_addr, my_address(), stg::proxy_acc_code);
 
@@ -147,7 +154,7 @@ const int flow::ask_lp = 0x333;
                     .store_slice(user_proxy_acc_addr) 
                     .store_coins(0) 
                     .store_uint(0, 107)
-                    .store_uint(opr::ask_lp)
+                    .store_uint(opr::ask_lp_ok)
                     .store_uint(ctx::qID, 64)
                     .store_coins(jetton_amount)
                 .end_cell();
@@ -165,7 +172,7 @@ const int flow::ask_lp = 0x333;
                     .store_slice(user_proxy_acc_addr) 
                     .store_coins(0) 
                     .store_uint(0, 107)
-                    .store_uint(opr::add_lp)
+                    .store_uint(opr::provide_lp_ok)
                     .store_uint(ctx::qryID, 64)
                     .store_coins(jetton_amount) ;; lp tokens amount
                 .end_cell();
@@ -183,7 +190,7 @@ const int flow::ask_lp = 0x333;
                     .store_slice(user_proxy_acc_addr) 
                     .store_coins(0) 
                     .store_uint(0, 107)
-                    .store_uint(opr::add_swap)
+                    .store_uint(opr::swap_ok)
                     .store_uint(ctx::qryID, 64)
                     .store_coins(jetton_amount) ;; swapped amount
                 .end_cell();

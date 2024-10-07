@@ -6,6 +6,10 @@
 #include "local/storage.fc";
 #include "local/op_codes.fc";
 
+#include "../../../includes/common/proxy_acc_utils.fc";
+
+const int flow::ask_lp = 0x333;
+
 () recv_internal(int my_balance, int msg_value, cell in_msg_full, slice in_msg_body) impure {
     if (in_msg_body.slice_empty?()) { 
         return ();
@@ -55,13 +59,28 @@
                     .store_uint(1, 1)
                     .store_ref(
                         begin_cell()
-                            .store_uint(opr::ask_done, 32)
+                            .store_uint(flow::ask_lp, 32)
                             .store_slice(user_address)
+                            .store_coins(how_many)
                         .end_cell()
                     )
                 .end_cell();
 
             send_raw_message(message, 64);
+
+            slice user_acc_address = calculate_user_proxy_account_address(user_address, stg::collection_addr, stg::user_proxy_acc_code)
+            cell acc_notify =
+                begin_cell()
+                    .store_uint(0x18, 6)
+                    .store_slice(user_acc_address) 
+                    .store_coins(0) 
+                    .store_uint(0, 107)
+                    .store_uint(opr::ask_lp, 32)
+                    .store_uint(ctx::qID, 64)
+                .end_cell();
+
+            send_raw_message(acc_notify, 64);
+
             stg::lp_token_balance -= how_many;
             set_stg();
             return ();

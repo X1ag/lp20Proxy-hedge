@@ -8,3 +8,5 @@ const int opr::basic::jetton_notify = 0x7362d09c;
 const int opr::give_me_lp_pls = 0x010abc;
 const int opr::ext__deployment = 0x2134;
 const int opr::ask_done = 0x1325;
+
+const int opr::ask_lp = 0x911fa1;
