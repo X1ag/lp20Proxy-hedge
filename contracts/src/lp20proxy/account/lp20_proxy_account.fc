@@ -13,7 +13,7 @@
                 .store_slice(stg::collection_addr) 
                 .store_coins(0) 
                 .store_uint(0, 107)
-                .store_uint(opr::user_done)
+                .store_uint(opr::user_done, 32)
                 .store_uint(qID, 64)
 
                 .store_ref(
@@ -40,7 +40,7 @@
                 .store_slice(stg::collection_addr) 
                 .store_coins(0) 
                 .store_uint(0, 107)
-                .store_uint(opr::only_ask)
+                .store_uint(opr::only_ask, 32)
                 .store_uint(qID, 64)
                 .store_ref(
                     begin_cell()
@@ -62,7 +62,7 @@
     slice cs = in_msg_full.begin_parse();
     int flags = cs~load_uint(4);
 
-    load_storage();
+    load_stg();
 
     if (flags & 1) {        
         return ();
@@ -101,6 +101,18 @@
                 send_raw_message(message.end_cell(), 64);
 
                 stg::flag_tokens = -1;
+
+            } else {
+                builder gas_message =
+                    begin_cell()
+                        .store_uint(0x18, 6)
+                        .store_slice(stg::collection_addr) 
+                        .store_coins(0) 
+                        .store_uint(0, 107)
+                        .store_uint(opr::take, 32)
+                        .store_uint(ctx::qryID, 64);
+
+                send_raw_message(gas_message.end_cell(), 64);
             }
             set_stg();
             return ();
@@ -149,5 +161,4 @@
     }
 
     throw(err::incr_opr);
-
 }

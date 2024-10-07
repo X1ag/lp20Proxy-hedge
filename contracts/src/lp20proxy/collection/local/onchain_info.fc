@@ -1,9 +1,10 @@
 
+const int getter_expected_tokens = "getter_expected_tokens"c;
+
 ;; we need to know how many lp tokens we recieve by 20% of stake
 () must_send_onchain_info_to_acc(int qID, slice user_addr, int amountA, int amountB, int ton_amount) impure inline {
 
-    const int getter_expected_tokens = "getter_expected_tokens"c;
-    slice user_proxy_acc_addr = calculate_user_proxy_account_address(from_user_addr, my_address(), stg::proxy_acc_code);
+    slice user_proxy_acc_addr = calculate_user_proxy_account_address(user_addr, my_address(), stg::proxy_acc_code, stg::pool_addr, stg::vault_addr);
 
     cell message = 
         begin_cell()

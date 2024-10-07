@@ -1,14 +1,26 @@
-cell pack_proxy_account_data(slice user_address, slice collection_address) inline {
+cell pack_proxy_account_data(slice user_address, slice collection_address, slice pool_addr, slice vault_addr) inline {
   return 
     begin_cell()
         .store_slice(user_address)
         .store_slice(collection_address)
-        .store_slice(stg::pool_addr) ;; sorry =)
-        .store_coins(0)
-        .store_coins(0)
-        .store_coins(0)
-        .store_coins(0)
-        .store_coins(0)
+        .store_slice(pool_addr)
+        .store_ref(
+          begin_cell()
+            .store_coins(0)
+            .store_coins(0)
+            .store_coins(0)
+            .store_coins(0)
+            .store_coins(0)
+          .end_cell()
+        )
+
+        .store_ref(
+          begin_cell()
+            .store_coins(0)
+            .store_slice(vault_addr)
+          .end_cell()
+        )
+        .store_uint(0, 1)
         .store_uint(0, 1)
         .store_uint(0, 1)
         .store_uint(0, 1)
@@ -16,12 +28,12 @@ cell pack_proxy_account_data(slice user_address, slice collection_address) inlin
     .end_cell();
 }
 
-cell calculate_proxy_account_state_init(slice user_address, slice collection_address, cell proxy_account_code) inline {
+cell calculate_proxy_account_state_init(slice user_address, slice collection_address, cell proxy_account_code, slice pool_addr, slice vault_addr) inline {
   return 
     begin_cell()
         .store_uint(0, 2)
         .store_dict(proxy_account_code)
-        .store_dict(pack_proxy_account_data(user_address, collection_address))
+        .store_dict(pack_proxy_account_data(user_address, collection_address, pool_addr, vault_addr))
         .store_uint(0, 1)
     .end_cell();
 }
@@ -30,17 +42,17 @@ slice calculate_proxy_account_address(cell state_init) inline {
   return 
     begin_cell()
         .store_uint(4, 3)
-        .store_int(WORKCHAIN, 8)
+        .store_int(0, 8)
         .store_uint(cell_hash(state_init), 256)
   .end_cell().begin_parse();
 }
 
-slice calculate_user_proxy_account_address(slice user_address, slice collection_address, cell proxy_account_code) inline {
-    return calculate_proxy_account_address(calculate_proxy_account_state_init(user_address, collection_address, proxy_account_code));
+slice calculate_user_proxy_account_address(slice user_address, slice collection_address, cell proxy_account_code, slice pool_addr, slice vault_addr) inline {
+    return calculate_proxy_account_address(calculate_proxy_account_state_init(user_address, collection_address, proxy_account_code, pool_addr, vault_addr));
 }
 
-(slice, cell) calc_proxy_account_addr_and_si(slice user_address, slice collection_address, cell proxy_account_code) inline {
-    cell si = calculate_proxy_account_state_init(user_address, collection_address, proxy_account_code);
+(slice, cell) calc_proxy_account_addr_and_si(slice user_address, slice collection_address, cell proxy_account_code, slice pool_addr, slice vault_addr) inline {
+    cell si = calculate_proxy_account_state_init(user_address, collection_address, proxy_account_code, pool_addr, vault_addr);
     slice addr = calculate_proxy_account_address(si);
     return (addr, si);
 }

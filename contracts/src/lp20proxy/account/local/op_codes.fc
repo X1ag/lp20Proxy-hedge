@@ -10,4 +10,6 @@ const int opr::ask_lp_ok = 0x911fa1;
 const int opr::user_done = 0xf1a5572;
 const int opr::only_ask = 0x7abaf1ac;
 
+const int opr::take = 0x42;
+
 const int opr::getter_expected_tokens = "getter_expected_tokens"c;

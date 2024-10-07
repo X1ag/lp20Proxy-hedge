@@ -25,6 +25,8 @@ const int opr::only_ask = 0x7abaf1ac;
 const int opr::user_done = 0xf1a5572;
 
 
+const int opr::take = 0x42;
+
 
 const int opr::ask_done = 0x1325;
 

@@ -29,12 +29,12 @@ global cell stg::tokenB_wallet_code;
 
     slice ext_data = lp20proxy_stg~load_ref().begin_parse();
     stg::stonfi_router_addr = ext_data~load_msg_addr();
-    stg::proxy_acc_code = ext_data~loadr_ref();
+    stg::proxy_acc_code = ext_data~load_ref();
 
     stg::tokenA_master = ext_data~load_msg_addr();
     stg::tokenB_master = ext_data~load_msg_addr();
-    stg::tokenA_wallet_code = ext_data~loadr_ref();
-    stg::tokenB_wallet_code = ext_data~loadr_ref();
+    stg::tokenA_wallet_code = ext_data~load_ref();
+    stg::tokenB_wallet_code = ext_data~load_ref();
 }
 
 () set_stg() impure inline {

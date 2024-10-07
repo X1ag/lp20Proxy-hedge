@@ -2,7 +2,7 @@
 cell create_swap_payload(slice router_wallet, slice adi_payload) impure inline {
     cell payload = 
         begin_cell()
-            .store_uint(opr::dex::swap)
+            .store_uint(opr::dex::swap, 32)
             .store_slice(router_wallet)
             .store_coins(0)
             .store_slice(my_address())
@@ -13,11 +13,11 @@ cell create_swap_payload(slice router_wallet, slice adi_payload) impure inline {
     return payload;
 }
 
-cell create_swap_message(int qID, int jetton_amount, int fwd_amount, cell swap_payload, int ton_amount) impure inline {
+cell create_swap_message(int qID, int jetton_amount, int fwd_amount, cell swap_payload, int ton_amount, slice my_wallet) impure inline {
     cell message = 
         begin_cell()
             .store_uint(0x18, 6)
-            .store_slice(stg::collection_addr) 
+            .store_slice(my_wallet) 
             .store_coins(ton_amount) 
             .store_uint(0, 107)
             
@@ -39,18 +39,23 @@ cell create_swap_message(int qID, int jetton_amount, int fwd_amount, cell swap_p
 
     int flow_label = 0x222;
 
-    cell router_walletB = calculate_user_jetton_wallet_address(stg::stonfi_router_addr, stg::tokenb_master, stg::tokenB_wallet_code);
+    slice router_walletB = calculate_user_jetton_wallet_address(stg::stonfi_router_addr, stg::tokenB_master, stg::tokenB_wallet_code);
 
-    cell addi_payload =
+    slice addi_payload =
         begin_cell()
             .store_uint(flow_label, 32)
             .store_slice(user_addr)
-        .end_cell();
+        .end_cell().begin_parse();
 
     cell swap_payload = create_swap_payload(router_walletB, addi_payload);
 
     ;; 0.175 TON as forward jetton amount
-    cell swap_message = create_swap_message(ctx::qryID, swap_amount, 175000000, swap_payload, 220000000);
+
+    slice my_wallet = calculate_user_jetton_wallet_address(my_address(), stg::tokenA_master, stg::tokenA_wallet_code);
+
+    int amountA = 1000000000; ;; 175000000
+    int amountB = 500000000; ;; 220000000
+    cell swap_message = create_swap_message(ctx::qryID, swap_amount, amountA, swap_payload, amountB, my_wallet);
 
     send_raw_message(swap_message, 1);
 }
