@@ -1,9 +1,25 @@
 import { Address, beginCell, Cell, Contract, contractAddress, ContractProvider, Sender, SendMode } from '@ton/core';
 
-export type StonfiV1RouterConfig = {};
+export type StonfiV1RouterConfig = {
+    is_locked: number;
+    admin_address: Address; 
+    jetton_lp_wallet_code: Cell; 
+    pool_code: Cell;
+    lp_account_code: Cell; 
+    temp_upgrade: Cell;
+};
 
 export function stonfiV1RouterConfigToCell(config: StonfiV1RouterConfig): Cell {
-    return beginCell().endCell();
+    return (
+        beginCell()
+            .storeUint(config.is_locked, 1)
+            .storeAddress(config.admin_address)
+            .storeRef(config.jetton_lp_wallet_code)
+            .storeRef(config.pool_code)
+            .storeRef(config.lp_account_code)
+            .storeRef(config.temp_upgrade)
+        .endCell()
+    );
 }
 
 export class StonfiV1Router implements Contract {
