@@ -1,5 +1,5 @@
 import { toNano } from '@ton/core';
-import { Lp20ProxyAccount } from '../../../../wrappers/Lp20ProxyAccount';
+import { Lp20ProxyAccount } from '../../../../wrappers/lp20proxy/account/Lp20ProxyAccount';
 import { compile, NetworkProvider } from '@ton/blueprint';
 
 export async function run(provider: NetworkProvider) {

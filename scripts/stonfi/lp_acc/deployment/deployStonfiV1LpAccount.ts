@@ -1,5 +1,5 @@
 import { toNano } from '@ton/core';
-import { StonfiV1LpAccount } from '../../../../wrappers/StonfiV1LpAccount';
+import { StonfiV1LpAccount } from '../../../../wrappers/stonfi/lp_acc/StonfiV1LpAccount';
 import { compile, NetworkProvider } from '@ton/blueprint';
 
 export async function run(provider: NetworkProvider) {

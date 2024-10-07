@@ -1,6 +1,6 @@
 import { Blockchain, SandboxContract, TreasuryContract } from '@ton/sandbox';
 import { Cell, toNano } from '@ton/core';
-import { Lp20ProxyAccount } from '../wrappers/Lp20ProxyAccount';
+import { Lp20ProxyAccount } from '../wrappers/lp20proxy/account/Lp20ProxyAccount';
 import '@ton/test-utils';
 import { compile } from '@ton/blueprint';
 

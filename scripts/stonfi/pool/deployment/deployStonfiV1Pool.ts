@@ -1,5 +1,5 @@
 import { toNano } from '@ton/core';
-import { StonfiV1Pool } from '../../../../wrappers/StonfiV1Pool';
+import { StonfiV1Pool } from '../../../../wrappers/stonfi/pool/StonfiV1Pool';
 import { compile, NetworkProvider } from '@ton/blueprint';
 
 export async function run(provider: NetworkProvider) {
