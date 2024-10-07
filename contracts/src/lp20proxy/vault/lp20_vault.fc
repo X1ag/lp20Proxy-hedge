@@ -35,62 +35,53 @@ const int flow::ask_lp = 0x333;
 
     load_stg();
 
-    if equal_slices(ctx::send_addr, stg::collection_addr) {
-        if ctx::opr == opr::give_me_lp_pls {
+    if ctx::opr == opr::give_me_lp_pls {
 
-            int how_many = in_msg_body~load_coins();
-            slice user_address = in_msg_body~load_msg_addr();
-            throw_unless(941, how_many <= stg::lp_token_balance);
+        slice bodyref = in_msg_body~load_ref().begin_parse();
 
-            int amountA = 50000000; ;; 0.05 TON
-            int amountB = 1;
+        int how_many = bodyref~load_coins();
+        throw_unless(901, how_many <= stg::lp_token_balance);
 
-            cell message =
-                begin_cell()
-                    .store_uint(0x18, 6)
-                    .store_slice(stg::my_lp_jetton_wallet) 
-                    .store_coins(amountA) 
-                    .store_uint(0, 107)
+        slice user_addr = bodyref~load_msg_addr();
+        slice collection_addr = bodyref~load_msg_addr();
+        cell user_instance_ref = bodyref~load_ref();
 
-                    .store_uint(opr::basic::transfer, 32)
-                    .store_uint(ctx::qryID, 64)
-                    .store_coins(how_many)
-                    .store_slice(stg::collection_addr)
-                    .store_uint(0, 2)
-                    .store_uint(0, 1)
-                    .store_coins(0)
-                    .store_uint(0, 1)
-                    ;; .store_coins(10000000) ;; 0.01 TON
-                    ;; .store_uint(1, 1)
-                    ;; .store_ref(
-                    ;;     begin_cell()
-                    ;;         .store_uint(flow::ask_lp, 32)
-                    ;;         .store_slice(user_address)
-                    ;;         .store_coins(how_many)
-                    ;;     .end_cell()
-                    ;; )
-                .end_cell();
 
-            send_raw_message(message, 1);
+        slice user_proxy_acc_addr = calculate_user_proxy_account_address(user_addr, collection_addr, stg::user_proxy_acc_code, stg::pool_addr, my_address());
+        throw_unless(941, equal_slices(user_proxy_acc_addr, ctx::send_addr));
 
-            slice user_acc_address = calculate_user_proxy_account_address(user_address, stg::collection_addr, stg::user_proxy_acc_code, stg::pool_addr, my_address());
-            cell acc_notify =
-                begin_cell()
-                    .store_uint(0x18, 6)
-                    .store_slice(user_acc_address) 
-                    .store_coins(amountB) 
-                    .store_uint(0, 107)
-                    .store_uint(opr::ask_lp, 32)
-                    .store_uint(ctx::qryID, 64)
-                .end_cell();
+        int amountB = 20000000; ;; 0.02 TON
 
-            send_raw_message(acc_notify, 1);
+        cell message =
+            begin_cell()
+                .store_uint(0x18, 6)
+                .store_slice(stg::my_lp_jetton_wallet) 
+                .store_coins(0) 
+                .store_uint(0, 107)
 
-            stg::lp_token_balance -= how_many;
-            set_stg();
-            return ();
-        }
+                .store_uint(opr::basic::transfer, 32)
+                .store_uint(ctx::qryID, 64)
+                .store_coins(how_many)
+                .store_slice(collection_addr)
+                .store_uint(0, 2)
+                .store_uint(0, 1)
+                .store_coins(amountB) 
+                .store_uint(1, 1)
+                    .store_ref(
+                        begin_cell()
+                            .store_uint(opr::user_done, 32)
+                            .store_ref(user_instance_ref)
+                        .end_cell()
+                    )
+            .end_cell();
+
+        send_raw_message(message, 64);
+
+        stg::lp_token_balance -= how_many;
+        set_stg();
+        return ();
     }
+    
 
     if ctx::opr == opr::basic::jetton_notify {
         (int jetton_amount, slice from_user, int has_ref) = (in_msg_body~load_coins(), in_msg_body~load_msg_addr(), in_msg_body~load_uint(1));

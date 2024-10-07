@@ -3,7 +3,6 @@ import { Address, beginCell, Cell, Contract, contractAddress, ContractProvider, 
 export type Lp20VaultConfig = {
     init: number;
     lp_token_balance: bigint;
-    collection_addr: Address;
     pool_addr: Address;
     user_proxy_acc_code: Cell;
 };
@@ -12,7 +11,6 @@ export function lp20VaultConfigToCell(config: Lp20VaultConfig): Cell {
     return (
         beginCell()
             .storeCoins(config.lp_token_balance)
-            .storeAddress(config.collection_addr)
             .storeAddress(config.pool_addr)
             .storeRef(config.user_proxy_acc_code)
         .endCell()

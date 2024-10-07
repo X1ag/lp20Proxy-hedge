@@ -6,24 +6,56 @@
 #include "local/op_codes.fc";
 
 () chek_conds(int qID) impure inline {
-    if (stg::flag_tokens == 1) & (stg::prov_flag_ask_lp == 1) & (stg::flag_swap == 1) & (stg::flag_onchain_info == 1) & (stg::flag_ask_lp == 1) {
+    ;; if (stg::flag_tokens == 1) & (stg::prov_flag_ask_lp == 1) & (stg::flag_swap == 1) & (stg::flag_onchain_info == 1) & (stg::flag_ask_lp == 1) {
+    ;;     cell message = 
+    ;;         begin_cell()
+    ;;             .store_uint(0x18, 6)
+    ;;             .store_slice(stg::collection_addr) 
+    ;;             .store_coins(0) 
+    ;;             .store_uint(0, 107)
+    ;;             .store_uint(opr::user_done, 32)
+    ;;             .store_uint(qID, 64)
+
+                ;; .store_ref(
+                ;;     begin_cell()
+                ;;         .store_slice(stg::user_addr)
+                ;;         .store_coins(stg::token_amountA)
+                ;;         .store_coins(stg::token_amountB)
+                ;;         .store_coins(stg::swapped_amount)
+                ;;         .store_coins(stg::lp_tokens_amount)
+                ;;         .store_coins(stg::asked_lp_amount)
+                ;;     .end_cell()
+                ;; )
+    ;;         .end_cell();
+
+
+    ;; }
+
+    if (stg::flag_tokens == 1) & (stg::prov_flag_ask_lp == 1) & (stg::flag_swap == 1) & (stg::flag_onchain_info == 1) {
+
         cell message = 
             begin_cell()
                 .store_uint(0x18, 6)
-                .store_slice(stg::collection_addr) 
+                .store_slice(stg::vault_addr) 
                 .store_coins(0) 
                 .store_uint(0, 107)
-                .store_uint(opr::user_done, 32)
+                .store_uint(opr::give_me_lp_pls, 32)
                 .store_uint(qID, 64)
-
                 .store_ref(
                     begin_cell()
+                        .store_coins(stg::onchain_info_lp)
                         .store_slice(stg::user_addr)
-                        .store_coins(stg::token_amountA)
-                        .store_coins(stg::token_amountB)
-                        .store_coins(stg::swapped_amount)
-                        .store_coins(stg::lp_tokens_amount)
-                        .store_coins(stg::asked_lp_amount)
+                        .store_slice(stg::collection_addr)
+                        .store_ref(
+                            begin_cell()
+                                .store_slice(stg::user_addr)
+                                .store_coins(stg::token_amountA)
+                                .store_coins(stg::token_amountB)
+                                .store_coins(stg::swapped_amount)
+                                .store_coins(stg::lp_tokens_amount)
+                                .store_coins(stg::onchain_info_lp)
+                            .end_cell()
+                        )
                     .end_cell()
                 )
             .end_cell();
@@ -31,26 +63,6 @@
         stg::token_amountA = 0;
         stg::token_amountB = 0;
         send_raw_message(message, 128);
-    }
-
-    if (stg::flag_tokens == 1) & (stg::prov_flag_ask_lp == 1) & (stg::flag_swap == 1) & (stg::flag_onchain_info == 1) {
-        cell message = 
-            begin_cell()
-                .store_uint(0x18, 6)
-                .store_slice(stg::collection_addr) 
-                .store_coins(0) 
-                .store_uint(0, 107)
-                .store_uint(opr::only_ask, 32)
-                .store_uint(qID, 64)
-                .store_ref(
-                    begin_cell()
-                        .store_slice(stg::user_addr)
-                        .store_coins(stg::onchain_info_lp)
-                    .end_cell()
-                )
-            .end_cell();
-
-        send_raw_message(message, 64);
     }
 }
 
@@ -148,17 +160,17 @@
         }
     }
 
-    ;; messages from vault
-    if equal_slices(ctx::send_addr, stg::vault_addr) { 
-        if ctx::opr == opr::ask_lp_ok {
-            throw_unless(98, stg::flag_tokens);
-            stg::asked_lp_amount = in_msg_body~load_coins();
-            stg::flag_ask_lp = -1;
-            chek_conds(ctx::qryID);
-            set_stg();
-            return ();
-        }
-    }
+    ;; ;; messages from vault
+    ;; if equal_slices(ctx::send_addr, stg::vault_addr) { 
+    ;;     if ctx::opr == opr::ask_lp_ok {
+    ;;         throw_unless(98, stg::flag_tokens);
+    ;;         stg::asked_lp_amount = in_msg_body~load_coins();
+    ;;         stg::flag_ask_lp = -1;
+    ;;         chek_conds(ctx::qryID);
+    ;;         set_stg();
+    ;;         return ();
+    ;;     }
+    ;; }
 
     throw(err::incr_opr);
 }

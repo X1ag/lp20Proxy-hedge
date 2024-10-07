@@ -42,7 +42,6 @@ export async function run(provider: NetworkProvider) {
     const config = {
         init: 0,
         lp_token_balance: 0n,
-        collection_addr: Address.parse(LP20_COLLECTION_ADDRESS),
         pool_addr: Address.parse(STONFI_POOL_ADDRESS),
         user_proxy_acc_code: await compile("lp20proxy/account/Lp20ProxyAccount.compile")
     }

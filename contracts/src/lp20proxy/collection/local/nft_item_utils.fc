@@ -1,0 +1,10 @@
+
+cell calculate_nft_item_state_init(int a, cell b) impure inline {
+    ;; template
+    return b;
+}
+
+slice calculate_nft_item_address(int a, cell b) impure inline {
+    ;; template
+    return b.begin_parse();
+}

@@ -24,7 +24,6 @@ cell pack_proxy_account_data(slice user_address, slice collection_address, slice
         .store_uint(0, 1)
         .store_uint(0, 1)
         .store_uint(0, 1)
-        .store_uint(0, 1)
     .end_cell();
 }
 

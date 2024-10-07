@@ -7,7 +7,7 @@
 slice get_nft_address_by_index(int index) method_id {
     load_stg();
     cell state_init = calculate_nft_item_state_init(index, stg::lp20proxy_item_code);
-    return calculate_nft_item_address(workchain(), state_init);
+    return calculate_nft_item_address(0, state_init);
 }
 
 (int, int, slice) royalty_params() method_id {

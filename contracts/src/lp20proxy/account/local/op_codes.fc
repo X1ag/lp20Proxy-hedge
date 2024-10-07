@@ -12,4 +12,6 @@ const int opr::only_ask = 0x7abaf1ac;
 
 const int opr::take = 0x42;
 
+const int opr::give_me_lp_pls = 0x010abc;
+
 const int opr::getter_expected_tokens = "getter_expected_tokens"c;

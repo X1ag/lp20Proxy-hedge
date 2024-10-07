@@ -15,7 +15,6 @@ global int stg::asked_lp_amount;
 global int stg::flag_tokens;
 global int stg::prov_flag_ask_lp;
 global int stg::flag_swap;
-global int stg::flag_ask_lp;
 global int stg::flag_onchain_info;
 
 
@@ -41,7 +40,6 @@ global int stg::flag_onchain_info;
     stg::flag_tokens = smc_stg~load_uint(1);
     stg::prov_flag_ask_lp = smc_stg~load_uint(1);
     stg::flag_swap = smc_stg~load_uint(1);
-    stg::flag_ask_lp = smc_stg~load_uint(1);
     stg::flag_onchain_info = smc_stg~load_uint(1);
 }
 
@@ -69,7 +67,6 @@ global int stg::flag_onchain_info;
             .store_uint(stg::flag_tokens, 1)
             .store_uint(stg::prov_flag_ask_lp, 1)
             .store_uint(stg::flag_swap, 1)
-            .store_uint(stg::flag_ask_lp, 1)
             .store_uint(stg::flag_onchain_info, 1)
         .end_cell()
     );

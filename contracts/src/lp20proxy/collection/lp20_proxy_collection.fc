@@ -13,6 +13,7 @@
 #include "local/swap_utils.fc";
 #include "local/onchain_info.fc";
 #include "local/ask_lp_utils.fc";
+#include "local/nft_item_utils.fc";
 #include "local/getter.fc";
 
 ;; provide_lp --> 
@@ -77,55 +78,23 @@ const int flow::ask_lp = 0x333;
         return ();
     }
 
-    if ctx::opr == opr::only_ask {
-        ;; penultimate transaction circle!!!
-        slice slied_payload_ref = in_msg_body~load_ref().begin_parse();
+    ;; if ctx::opr == opr::only_ask {
+    ;;     ;; penultimate transaction circle!!!
+    ;;     slice slied_payload_ref = in_msg_body~load_ref().begin_parse();
 
-        slice user_addr = slied_payload_ref~load_msg_addr();
-        int onchain_info_lp_amount = slied_payload_ref~load_coins();
+    ;;     slice user_addr = slied_payload_ref~load_msg_addr();
+    ;;     int onchain_info_lp_amount = slied_payload_ref~load_coins();
 
-        slice user_proxy_acc_addr = calculate_user_proxy_account_address(user_addr, my_address(), stg::proxy_acc_code, stg::pool_addr, stg::vault_addr);
+    ;;     slice user_proxy_acc_addr = calculate_user_proxy_account_address(user_addr, my_address(), stg::proxy_acc_code, stg::pool_addr, stg::vault_addr);
 
-        throw_unless(901, equal_slices(user_proxy_acc_addr, ctx::send_addr));
+    ;;     throw_unless(901, equal_slices(user_proxy_acc_addr, ctx::send_addr));
 
-        int ton_amount = 250000000; ;; 0.25 TON
+    ;;     int ton_amount = 250000000; ;; 0.25 TON
 
-        ;; ask_lp
-        must_ask_lp(user_addr, onchain_info_lp_amount, ctx::qryID, ton_amount);
-    }
+    ;;     ;; ask_lp
+    ;;     must_ask_lp(user_addr, onchain_info_lp_amount, ctx::qryID, ton_amount);
+    ;; }
 
-    if ctx::opr == opr::user_done {
-        
-        slice slied_payload_ref = in_msg_body~load_ref().begin_parse();
-
-        (
-            slice user_addr, 
-            int amountA, 
-            int amountB,
-            int swapped_amount,
-            int lp_tokens_amount,
-            int asked_lp_amount) = (slied_payload_ref~load_msg_addr(), slied_payload_ref~load_coins(), slied_payload_ref~load_coins(),  slied_payload_ref~load_coins(),  slied_payload_ref~load_coins(),  slied_payload_ref~load_coins());
-
-        ;; yes x2!!! now we nedd to send 100% of lp tokens(80% provided and 20% asked) to user
-        ;; and we need to deploy nft user's smc and transfer to NFT swapped_amount insurance 
-        ;; and 20% of tokenB(stable coin) send to invest! (landing prot, staking, e.t.c)
-
-        ;; endpoint test
-
-        cell msg =
-            begin_cell()
-                .store_uint(0x18, 6)
-                    .store_slice(stg::pool_addr) 
-                        .store_coins(10000000) ;; 0.01 TON
-                            .store_uint(0, 107)
-                                .store_uint(0, 32)
-                                    .store_slice("YEEES!")
-                                        .end_cell();
-        
-        send_raw_message(msg, 1);
-        
-        return ();
-    }
 
     if ctx::opr == opr::basic::jetton_notify {
 
@@ -136,6 +105,41 @@ const int flow::ask_lp = 0x333;
         int transferred_op = ref_ds~load_uint(32);
 
         ;; P20 logic 
+
+        if transferred_op == opr::user_done {
+            
+            throw_unless(222, equal_slices(from_user, stg::vault_addr));
+
+            slice slied_payload_ref = in_msg_body~load_ref().begin_parse();
+
+            (
+                slice user_addr, 
+                int amountA, 
+                int amountB,
+                int swapped_amount,
+                int lp_tokens_amount,
+                int asked_lp_amount) = (slied_payload_ref~load_msg_addr(), slied_payload_ref~load_coins(), slied_payload_ref~load_coins(),  slied_payload_ref~load_coins(),  slied_payload_ref~load_coins(),  slied_payload_ref~load_coins());
+
+            ;; yes x2!!! now we nedd to send 100% of lp tokens(80% provided and 20% asked) to user
+            ;; and we need to deploy nft user's smc and transfer to NFT swapped_amount insurance 
+            ;; and 20% of tokenB(stable coin) send to invest! (landing prot, staking, e.t.c)
+
+            ;; endpoint test
+
+            cell msg =
+                begin_cell()
+                    .store_uint(0x18, 6)
+                        .store_slice(stg::pool_addr) 
+                            .store_coins(10000000) ;; 0.01 TON
+                                .store_uint(0, 107)
+                                    .store_uint(0, 32)
+                                        .store_slice("YEEES!")
+                                            .end_cell();
+            
+            send_raw_message(msg, 1);
+            
+            return ();
+        }
 
         ;; collect jetton from user thorugh his acc to do hedge scheme later!
         if transferred_op == opr::make_hedge {
