@@ -26,7 +26,7 @@ const int flow::ask_lp = 0x333;
 
     (ctx::opr, ctx::qryID) = (in_msg_body~load_uint(32), in_msg_body~load_uint(64));
 
-    if (ctx::opr == opr::ext__deployment) {
+    if (ctx::opr == opr::ext_deployment) {
         stg::my_lp_jetton_wallet = in_msg_body~load_msg_addr();
         stg::init? = 1;
         set_stg();

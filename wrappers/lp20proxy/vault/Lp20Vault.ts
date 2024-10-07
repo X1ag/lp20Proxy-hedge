@@ -1,9 +1,22 @@
 import { Address, beginCell, Cell, Contract, contractAddress, ContractProvider, Sender, SendMode } from '@ton/core';
 
-export type Lp20VaultConfig = {};
+export type Lp20VaultConfig = {
+    init: number;
+    lp_token_balance: bigint;
+    collection_addr: Address;
+    pool_addr: Address;
+    user_proxy_acc_code: Cell;
+};
 
 export function lp20VaultConfigToCell(config: Lp20VaultConfig): Cell {
-    return beginCell().endCell();
+    return (
+        beginCell()
+            .storeCoins(config.lp_token_balance)
+            .storeAddress(config.collection_addr)
+            .storeAddress(config.pool_addr)
+            .storeRef(config.user_proxy_acc_code)
+        .endCell()
+    );
 }
 
 export class Lp20Vault implements Contract {
@@ -19,11 +32,26 @@ export class Lp20Vault implements Contract {
         return new Lp20Vault(contractAddress(workchain, init), init);
     }
 
-    async sendDeploy(provider: ContractProvider, via: Sender, value: bigint) {
+    static createAddressFromConfig(config: Lp20VaultConfig, code: Cell, workchain = 0) {
+        const data = lp20VaultConfigToCell(config);
+        const init = { code, data };
+        return contractAddress(workchain, init);
+    }
+
+    async sendDeploy(provider: ContractProvider, via: Sender, 
+        options: {
+            value: bigint;
+            wallet_addres: Address;
+        }
+    ) {
         await provider.internal(via, {
-            value,
+            value: options.value,
             sendMode: SendMode.PAY_GAS_SEPARATELY,
-            body: beginCell().endCell(),
+            body: 
+                beginCell()
+                    .storeUint(0x2134, 32)
+                    .storeAddress(options.wallet_addres)
+                .endCell(),
         });
     }
 }

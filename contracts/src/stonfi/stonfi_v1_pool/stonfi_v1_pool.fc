@@ -85,17 +85,18 @@
     int liquidity = 0;
     slice to = "";
 
-    if (storage::total_supply_lp == 0) { 
-      ;; handle initial liquidity
-      liquidity = sqrt(tot_am0 * tot_am1) / REQUIRED_MIN_LIQUIDITY;
-      to = addr_none(); ;; Lock the initial liquidity, so it will be impossible to fully drain the pool.
-    } else {
-      int to_mint0 = (tot_am0 * storage::total_supply_lp) / storage::reserve0;
-      int to_mint1 = (tot_am1 * storage::total_supply_lp) / storage::reserve1;
-      liquidity = min(to_mint0, to_mint1); ;; mint the minimum amount of liquidity, excesses will be shared proportionally across the pool
+    ;; if (storage::total_supply_lp == 0) { 
+    ;;   ;; handle initial liquidity
+    ;;   liquidity = sqrt(tot_am0 * tot_am1) / REQUIRED_MIN_LIQUIDITY;
+    ;;   to = addr_none(); ;; Lock the initial liquidity, so it will be impossible to fully drain the pool.
+    ;; } else {
 
-      to = user_address;
-    }
+    int to_mint0 = (tot_am0 * storage::total_supply_lp) / storage::reserve0;
+    int to_mint1 = (tot_am1 * storage::total_supply_lp) / storage::reserve1;
+    liquidity = min(to_mint0, to_mint1); ;; mint the minimum amount of liquidity, excesses will be shared proportionally across the pool
+
+    to = user_address;
+    ;; }
 
     storage::reserve0 += tot_am0;
     storage::reserve1 += tot_am1;

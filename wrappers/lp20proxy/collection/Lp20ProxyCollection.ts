@@ -1,9 +1,63 @@
 import { Address, beginCell, Cell, Contract, contractAddress, ContractProvider, Sender, SendMode } from '@ton/core';
 
-export type Lp20ProxyCollectionConfig = {};
+
+export type Lp20ProxyRoyaltyParams = {
+    royaltyFactor: number;
+    royaltyBase: number;
+    royaltyAddress: Address;
+};
+
+export type Lp20ProxyCollectionConfig = {
+    admin_addr: Address;
+    next_lp20proxy_index: bigint;
+    lp20proxy_content: Cell;
+    lp20proxy_item_code: Cell;
+    lp20proxy_royalty_params: Lp20ProxyRoyaltyParams;
+    pool_addr: Address;
+    stonfi_router_addr: Address;
+    invest_addr: Address;
+    proxy_acc_code: Cell;
+    vault_addr: Address;
+    tokenA_master: Address;
+    tokenB_master: Address;
+    tokenA_wallet_code: Cell;
+    tokenB_wallet_code: Cell;
+};
 
 export function lp20ProxyCollectionConfigToCell(config: Lp20ProxyCollectionConfig): Cell {
-    return beginCell().endCell();
+    return (
+        beginCell()
+            .storeAddress(config.admin_addr)
+            .storeUint(config.next_lp20proxy_index, 64)
+            .storeRef(config.lp20proxy_content)
+            .storeRef(config.lp20proxy_item_code)
+            .storeRef(
+                beginCell()
+                    .storeUint(config.lp20proxy_royalty_params.royaltyFactor, 16)
+                    .storeUint(config.lp20proxy_royalty_params.royaltyBase, 16)
+                    .storeAddress(config.lp20proxy_royalty_params.royaltyAddress)
+                .endCell()
+            )
+            .storeAddress(config.pool_addr)
+            .storeAddress(config.vault_addr)
+            .storeRef(
+                beginCell()
+                    .storeAddress(config.stonfi_router_addr)
+                    .storeRef(config.proxy_acc_code)
+
+                    .storeAddress(config.tokenA_master)
+                    .storeAddress(config.tokenB_master)
+                    .storeRef(config.tokenA_wallet_code)
+                    .storeRef(config.tokenB_wallet_code)
+                    .storeRef(
+                        beginCell()
+                            .storeAddress(config.invest_addr)
+                        .endCell()
+                    )
+                .endCell()
+            )
+        .endCell()
+    );
 }
 
 export class Lp20ProxyCollection implements Contract {

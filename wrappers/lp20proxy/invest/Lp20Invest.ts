@@ -1,9 +1,15 @@
 import { Address, beginCell, Cell, Contract, contractAddress, ContractProvider, Sender, SendMode } from '@ton/core';
 
-export type Lp20InvestConfig = {};
+export type Lp20InvestConfig = {
+    admin_addr: Address;
+};
 
 export function lp20InvestConfigToCell(config: Lp20InvestConfig): Cell {
-    return beginCell().endCell();
+    return (
+        beginCell()
+            .storeAddress(config.admin_addr)
+        .endCell()
+    );
 }
 
 export class Lp20Invest implements Contract {

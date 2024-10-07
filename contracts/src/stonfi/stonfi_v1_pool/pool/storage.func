@@ -37,22 +37,25 @@ global cell storage::lp_account_code;
 }
 
 () save_storage() impure inline {
-    set_data(begin_cell()
-        .store_slice(storage::router_address)
-        .store_uint(storage::lp_fee, 8) 
-        .store_uint(storage::protocol_fee, 8) 
-        .store_uint(storage::ref_fee, 8) 
-        .store_slice(storage::token0_address)
-        .store_slice(storage::token1_address) 
-        .store_coins(storage::total_supply_lp)
-        .store_ref(begin_cell()
-            .store_coins(storage::collected_token0_protocol_fee) 
-            .store_coins(storage::collected_token1_protocol_fee) 
-            .store_slice(storage::protocol_fee_address)
-            .store_coins(storage::reserve0) 
-            .store_coins(storage::reserve1)
-        .end_cell())
-        .store_ref(storage::jetton_lp_wallet_code)
-        .store_ref(storage::lp_account_code)
-    .end_cell());
+    set_data(
+        begin_cell()
+            .store_slice(storage::router_address)
+            .store_uint(storage::lp_fee, 8) 
+            .store_uint(storage::protocol_fee, 8) 
+            .store_uint(storage::ref_fee, 8) 
+            .store_slice(storage::token0_address)
+            .store_slice(storage::token1_address) 
+            .store_coins(storage::total_supply_lp)
+            .store_ref(
+                begin_cell()
+                    .store_coins(storage::collected_token0_protocol_fee) 
+                    .store_coins(storage::collected_token1_protocol_fee) 
+                    .store_slice(storage::protocol_fee_address)
+                    .store_coins(storage::reserve0) 
+                    .store_coins(storage::reserve1)
+                .end_cell()
+            )
+            .store_ref(storage::jetton_lp_wallet_code)
+            .store_ref(storage::lp_account_code)
+        .end_cell());
 }

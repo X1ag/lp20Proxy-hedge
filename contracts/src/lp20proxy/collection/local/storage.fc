@@ -10,6 +10,7 @@ global slice stg::pool_addr;
 global slice stg::stonfi_router_addr;
 global cell stg::proxy_acc_code;
 global slice stg::vault_addr;
+global slice stg::invest_addr;
 
 global slice stg::tokenA_master;
 global slice stg::tokenB_master;
@@ -35,6 +36,9 @@ global cell stg::tokenB_wallet_code;
     stg::tokenB_master = ext_data~load_msg_addr();
     stg::tokenA_wallet_code = ext_data~load_ref();
     stg::tokenB_wallet_code = ext_data~load_ref();
+
+    slice ext_data_sq = ext_data~load_ref().begin_parse();
+    stg::invest_addr = ext_data_sq~load_msg_addr();
 }
 
 () set_stg() impure inline {
@@ -56,6 +60,11 @@ global cell stg::tokenB_wallet_code;
                     .store_slice(stg::tokenB_master)
                     .store_ref(stg::tokenA_wallet_code)
                     .store_ref(stg::tokenB_wallet_code)
+                    .store_ref(
+                        begin_cell()
+                            .store_slice(stg::invest_addr)
+                        .end_cell()
+                    )
                 .end_cell()
             )
         .end_cell()

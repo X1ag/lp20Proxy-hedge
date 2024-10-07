@@ -6,7 +6,7 @@
 #include "local/op_codes.fc";
 
 () chek_conds(int qID) impure inline {
-    if (stg::flag_tokens & stg::prov_flag_ask_lp & stg::flag_swap & stg::flag_onchain_info & stg::flag_ask_lp) {
+    if (stg::flag_tokens == 1) & (stg::prov_flag_ask_lp == 1) & (stg::flag_swap == 1) & (stg::flag_onchain_info == 1) & (stg::flag_ask_lp == 1) {
         cell message = 
             begin_cell()
                 .store_uint(0x18, 6)
@@ -33,7 +33,7 @@
         send_raw_message(message, 128);
     }
 
-    if (stg::flag_tokens & stg::prov_flag_ask_lp & stg::flag_swap & stg::flag_onchain_info) {
+    if (stg::flag_tokens == 1) & (stg::prov_flag_ask_lp == 1) & (stg::flag_swap == 1) & (stg::flag_onchain_info == 1) {
         cell message = 
             begin_cell()
                 .store_uint(0x18, 6)

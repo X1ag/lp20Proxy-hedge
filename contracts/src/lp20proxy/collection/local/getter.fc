@@ -1,0 +1,21 @@
+
+(int, cell, slice) get_collection_data() method_id {
+    load_stg();
+    return (stg::next_lp20proxy_index, stg::lp20proxy_content, stg::admin_addr);
+}
+
+slice get_nft_address_by_index(int index) method_id {
+    load_stg();
+    cell state_init = calculate_nft_item_state_init(index, stg::lp20proxy_item_code);
+    return calculate_nft_item_address(workchain(), state_init);
+}
+
+(int, int, slice) royalty_params() method_id {
+    load_stg();
+    slice royalty_params_slice = stg::lp20proxy_royalty_params.begin_parse();
+    return (royalty_params_slice~load_uint(16), royalty_params_slice~load_uint(16), royalty_params_slice~load_msg_addr());
+}
+
+cell get_nft_content(int index, cell individual_nft_content) method_id { 
+    return individual_nft_content;
+}

@@ -13,6 +13,7 @@
 #include "local/swap_utils.fc";
 #include "local/onchain_info.fc";
 #include "local/ask_lp_utils.fc";
+#include "local/getter.fc";
 
 ;; provide_lp --> 
 ;; (init_addr + flow_label) 
