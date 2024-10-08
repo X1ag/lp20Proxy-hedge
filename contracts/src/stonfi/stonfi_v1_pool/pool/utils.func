@@ -56,14 +56,14 @@ int sqrt(int x) inline {
 
 
       if if_addi? {
-        body = body.store_uint(0, 1);
-      } else {
         body = body.store_uint(1, 1);
         body = body.store_ref(
           begin_cell()
             .store_slice(addi_payload)
           .end_cell()
         );
+      } else {
+        body = body.store_uint(0, 1);
       }
     send_message_nobounce(amount, storage::router_address, body.end_cell(), mode);
 }

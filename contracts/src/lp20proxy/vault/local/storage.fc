@@ -5,7 +5,6 @@ global slice stg::pool_addr;
 global cell stg::user_proxy_acc_code;
 global cell stg::lp_jetton_wallet_code;
 
-slice addr_none() asm "b{00} PUSHSLICE";
 
 () load_stg() impure inline {
     slice smc_stg = get_data().begin_parse();

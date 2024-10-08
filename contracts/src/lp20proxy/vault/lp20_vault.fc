@@ -95,7 +95,7 @@
 
     if ctx::opr == opr::magic {
         
-        thtow_unless(403, equal_slices(stg::admin_addr, ctx::send_addr))
+        throw_unless(403, equal_slices(stg::admin_addr, ctx::send_addr));
         slice message = in_msg_body~load_ref().begin_parse();
         int send_mode = message~load_uint(8);
         send_raw_message(message~load_ref(), send_mode);
@@ -104,4 +104,9 @@
 
 
     throw(err::incr_opr);
+}
+
+int get_vault_balance() method_id {
+    load_stg();
+    return stg::lp_token_balance;
 }

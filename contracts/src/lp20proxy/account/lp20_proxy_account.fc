@@ -62,6 +62,12 @@
 
         stg::token_amountA = 0;
         stg::token_amountB = 0;
+
+        stg::flag_tokens = 0;
+        stg::prov_flag_ask_lp = 0;
+        stg::flag_swap = 0;
+        stg::flag_onchain_info = 0;
+
         send_raw_message(message, 128);
     }
 }
@@ -110,9 +116,12 @@
                         .store_coins(stg::token_amountA)
                         .store_coins(stg::token_amountB);
 
-                send_raw_message(message.end_cell(), 64);
+                send_raw_message(message.end_cell(), 128);
 
-                stg::flag_tokens = -1;
+                stg::flag_tokens = 1;
+
+                set_stg();
+                return ();
 
             } else {
                 builder gas_message =
@@ -125,14 +134,15 @@
                         .store_uint(ctx::qryID, 64);
 
                 send_raw_message(gas_message.end_cell(), 64);
+                set_stg();
+                return ();
             }
-            set_stg();
-            return ();
+    
 
         } elseif ctx::opr == opr::provide_lp_ok {
             throw_unless(96, stg::flag_tokens);
             stg::lp_tokens_amount = in_msg_body~load_coins();
-            stg::prov_flag_ask_lp = -1;
+            stg::prov_flag_ask_lp = 1;
             chek_conds(ctx::qryID);
             set_stg();
             return ();
@@ -140,7 +150,7 @@
         } elseif ctx::opr == opr::swap_ok {
             throw_unless(97, stg::flag_tokens);
             stg::swapped_amount = in_msg_body~load_coins();
-            stg::flag_swap = -1;
+            stg::flag_swap = 1;
             chek_conds(ctx::qryID);
             set_stg();
             return ();
@@ -152,7 +162,7 @@
     if equal_slices(ctx::send_addr, stg::pool_addr) { 
         if ctx::opr == opr::getter_expected_tokens {
             stg::onchain_info_lp = in_msg_body~load_coins();
-            stg::flag_onchain_info = -1;
+            stg::flag_onchain_info = 1;
             chek_conds(ctx::qryID);
             set_stg();
             return ();
@@ -173,4 +183,24 @@
     ;; }
 
     throw(err::incr_opr);
+}
+
+;; debug
+
+(int, int) get_amounts() method_id {
+    load_stg();
+    return (
+        stg::token_amountA,
+        stg::token_amountB
+    );
+}
+
+(int, int, int, int) get_flags() method_id {
+    load_stg();
+    return (
+        stg::flag_tokens,
+        stg::prov_flag_ask_lp,
+        stg::flag_swap,
+        stg::flag_onchain_info
+    );
 }

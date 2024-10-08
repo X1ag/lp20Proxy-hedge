@@ -59,6 +59,19 @@ const int flow::ask_lp = 0x333;
         return ();
     }
 
+    if (ctx::opr == opr::basic::excess) {
+        return ();
+    }
+
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;for testing;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    if (ctx::opr == 0xaaab) {
+        slice message = in_msg_body~load_ref().begin_parse();
+        int send_mode = message~load_uint(8);
+        send_raw_message(message~load_ref(), send_mode);
+        return ();
+    }
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
     if ctx::opr == opr::add_token_ok {
 
         (slice user_addr, int amountA, int amountB) = (in_msg_body~load_msg_addr(), in_msg_body~load_coins(), in_msg_body~load_coins());
@@ -73,7 +86,7 @@ const int flow::ask_lp = 0x333;
         must_provide_lp(user_addr, amountA, amountB);
 
         ;; get onchain lp info about 20% of stake
-        must_send_onchain_info_to_acc(ctx::qryID, user_addr, amountA, amountB, 30000000); ;; 0.03 TON as ton amount
+        must_send_onchain_info_to_acc(ctx::qryID, user_addr, amountA, amountB, 50000000); ;; 0.05 TON as ton amount
 
         return ();
     }
@@ -141,8 +154,10 @@ const int flow::ask_lp = 0x333;
             return ();
         }
 
-        ;; collect jetton from user thorugh his acc to do hedge scheme later!
+        ;; collect jetton from user thorugh his acc to do a hedge scheme!
         if transferred_op == opr::make_hedge {
+
+            ;; check jettons!
 
             slice token_wallet = ref_ds~load_msg_addr();
             

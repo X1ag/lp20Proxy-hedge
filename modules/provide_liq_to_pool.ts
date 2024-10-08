@@ -1,7 +1,7 @@
 import { mnemonicToWalletKey } from '@ton/crypto';
 import { Address, beginCell, Cell, internal, MessageRelaxed, toNano, TonClient, TupleItemSlice, WalletContractV4 } from '@ton/ton';
 import * as dotenv from 'dotenv';
-import { STONFI_POOL_ADDRESS, STONFI_ROUTER_ADDRESS, TOKEN_ADDRESS_A, TOKEN_ADDRESS_B } from '../scripts/cosnt/const';
+import { STONFI_ROUTER_ADDRESS, TOKEN_ADDRESS_A, TOKEN_ADDRESS_B } from '../scripts/cosnt/const';
 
 dotenv.config()
 
@@ -28,14 +28,14 @@ function createProvideLpPayload(routerWalletAddr: Address): Cell {
         beginCell()
             .storeUint(0xfcf9e58f, 32)
             .storeAddress(routerWalletAddr)
-            .storeCoins(0)
+            .storeCoins(1) // min_out
             .storeUint(0, 1) // null addi payload
         .endCell()
     )
             
 }
 
-function createProvideLpMessage(qID: bigint, jettonAmount: bigint, fwdAmount: bigint, tonAmpunt: bigint, provideLpPyaload: Cell, myJwAddress: Address): MessageRelaxed {
+function createProvideLpMessage(qID: bigint, jettonAmount: bigint, fwdAmount: number, tonAmpunt: number, provideLpPyaload: Cell, myJwAddress: Address): MessageRelaxed {
     return (
         internal({
         to: myJwAddress,
@@ -43,7 +43,7 @@ function createProvideLpMessage(qID: bigint, jettonAmount: bigint, fwdAmount: bi
         body: 
         beginCell()
             .storeUint(0xf8a7ea5, 32)
-            .storeUint(Math.floor(Date.now() / 1000), 64)
+            .storeUint(qID, 64)
             .storeCoins(jettonAmount) 
             .storeAddress(Address.parse(STONFI_ROUTER_ADDRESS))
             .storeUint(0, 2) // response address -- null
@@ -57,6 +57,7 @@ function createProvideLpMessage(qID: bigint, jettonAmount: bigint, fwdAmount: bi
 }
 
 async function provide_liq(assetA_amount: bigint, assetB_amount: bigint) {
+
     const client = new TonClient({
         endpoint: ENDPOINT,
         apiKey: TONCENTER_API_KEY
@@ -70,11 +71,11 @@ async function provide_liq(assetA_amount: bigint, assetB_amount: bigint) {
     const seqno = await walletContract.getSeqno();
     console.log("[SEQNO] -->", seqno);
 
-    const myLpJettonWalletAddres: string = await getJettonWallet(
-        Address.parse(STONFI_POOL_ADDRESS),
-        my_address,
-        client
-    )
+    // const myLpJettonWalletAddres: string = await getJettonWallet(
+    //     Address.parse(STONFI_POOL_ADDRESS),
+    //     my_address,
+    //     client
+    // )
 
     const routerWalletA = await getJettonWallet(
         Address.parse(TOKEN_ADDRESS_A),
@@ -104,8 +105,8 @@ async function provide_liq(assetA_amount: bigint, assetB_amount: bigint) {
     const qID_A = BigInt(Math.floor(Date.now() / 1000))
     const qID_B = BigInt(Math.floor(Date.now() / 1000) + 12345567)
 
-    const msgA = createProvideLpMessage(qID_A, assetA_amount, toNano("0.24"), toNano("0.3"), payloadA, Address.parse(myWalletA))
-    const msgB = createProvideLpMessage(qID_B, assetB_amount, toNano("0.24"), toNano("0.3"), payloadB, Address.parse(myWalletB))
+    const msgA = createProvideLpMessage(qID_A, assetA_amount, 0.24, 0.3, payloadA, Address.parse(myWalletA))
+    const msgB = createProvideLpMessage(qID_B, assetB_amount, 0.24, 0.3, payloadB, Address.parse(myWalletB))
 
     const messages: MessageRelaxed[] = [
         msgA,
@@ -128,8 +129,8 @@ async function provide_liq(assetA_amount: bigint, assetB_amount: bigint) {
 
 async function main() {
     provide_liq(
-        toNano(100_000),
-        toNano(10_000)
+        30_000n * 10n**6n,
+        3_000n * 10n**6n
     )
 }
 
