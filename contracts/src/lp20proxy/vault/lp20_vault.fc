@@ -5,10 +5,11 @@
 
 #include "local/storage.fc";
 #include "local/op_codes.fc";
+#include "local/jetton_utils.fc";
 
 #include "../../../includes/common/proxy_acc_utils.fc";
 
-const int flow::ask_lp = 0x333;
+;; const int flow::ask_lp = 0x333;
 
 () recv_internal(int my_balance, int msg_value, cell in_msg_full, slice in_msg_body) impure {
     if (in_msg_body.slice_empty?()) { 
@@ -25,13 +26,6 @@ const int flow::ask_lp = 0x333;
     ctx::send_addr = cs~load_msg_addr();
 
     (ctx::opr, ctx::qryID) = (in_msg_body~load_uint(32), in_msg_body~load_uint(64));
-
-    if (ctx::opr == opr::ext_deployment) {
-        stg::my_lp_jetton_wallet = in_msg_body~load_msg_addr();
-        stg::init? = 1;
-        set_stg();
-        return ();
-    }
 
     load_stg();
 
@@ -50,12 +44,14 @@ const int flow::ask_lp = 0x333;
         slice user_proxy_acc_addr = calculate_user_proxy_account_address(user_addr, collection_addr, stg::user_proxy_acc_code, stg::pool_addr, my_address());
         throw_unless(941, equal_slices(user_proxy_acc_addr, ctx::send_addr));
 
+        slice my_lp_jetton_wallet = calculate_user_jetton_lp_wallet_address(my_address(), stg::pool_addr, stg::lp_jetton_wallet_code);
+
         int amountB = 20000000; ;; 0.02 TON
 
         cell message =
             begin_cell()
                 .store_uint(0x18, 6)
-                .store_slice(stg::my_lp_jetton_wallet) 
+                .store_slice(my_lp_jetton_wallet) 
                 .store_coins(0) 
                 .store_uint(0, 107)
 
@@ -81,21 +77,31 @@ const int flow::ask_lp = 0x333;
         set_stg();
         return ();
     }
-    
 
     if ctx::opr == opr::basic::jetton_notify {
+        ;; we can add to hashmap or create acc to some bounties for stakers
         (int jetton_amount, slice from_user, int has_ref) = (in_msg_body~load_coins(), in_msg_body~load_msg_addr(), in_msg_body~load_uint(1));
         throw_unless(121, has_ref);
 
         slice ref_ds = in_msg_body~load_ref().begin_parse();
         int transferred_op = ref_ds~load_uint(32);
 
-        if transferred_op == opr::give_me_lp_pls {
+        if transferred_op == opr::add_lp_to_vault {
             stg::lp_token_balance += jetton_amount;
+            set_stg();
         }
-        set_stg();
         return ();
     }
+
+    if ctx::opr == opr::magic {
+        
+        thtow_unless(403, equal_slices(stg::admin_addr, ctx::send_addr))
+        slice message = in_msg_body~load_ref().begin_parse();
+        int send_mode = message~load_uint(8);
+        send_raw_message(message~load_ref(), send_mode);
+        return ();
+    }
+
 
     throw(err::incr_opr);
 }

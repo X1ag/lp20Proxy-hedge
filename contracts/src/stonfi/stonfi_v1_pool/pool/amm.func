@@ -26,13 +26,14 @@
     .store_uint(query_id, 64)
     .store_coins(amount)
     .store_slice(my_address())
-    .store_slice(to)
-    .store_coins(fwd_amount);
+    .store_slice(to);
    
    if has_ref {
+    body = body.store_coins(fwd_amount);
     body = body.store_uint(1, 1);
     body = body.store_ref(ref_bodycell);
    } else {
+    body = body.store_coins(0);
      body = body.store_uint(0, 1);
    }
 

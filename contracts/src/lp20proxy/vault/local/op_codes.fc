@@ -10,5 +10,8 @@ const int opr::ext_deployment = 0x2134;
 const int opr::ask_done = 0x1325;
 
 const int opr::user_done = 0xf1a5572;
-
 const int opr::ask_lp = 0x911fa1;
+
+const int opr::magic = 0x777;
+
+const int opr::add_lp_to_vault = 0x214df;

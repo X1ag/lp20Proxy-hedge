@@ -1,21 +1,20 @@
 
-global int stg::init?;
 global int stg::lp_token_balance;
+global slice stg::admin_addr;
 global slice stg::pool_addr;
-global slice stg::my_lp_jetton_wallet;
 global cell stg::user_proxy_acc_code;
+global cell stg::lp_jetton_wallet_code;
+
+slice addr_none() asm "b{00} PUSHSLICE";
 
 () load_stg() impure inline {
     slice smc_stg = get_data().begin_parse();
+   
     stg::lp_token_balance = smc_stg~load_coins();
     stg::pool_addr = smc_stg~load_msg_addr();
+    stg::admin_addr = smc_stg~load_msg_addr();
     stg::user_proxy_acc_code = smc_stg~load_ref();
-    if stg::init? == 0 {
-        stg::my_lp_jetton_wallet = null();
-    } elseif stg::init? == 1 {
-        stg::my_lp_jetton_wallet = smc_stg~load_msg_addr();
-    }
-
+    stg::lp_jetton_wallet_code = smc_stg~load_ref();
 }
 
 () set_stg() impure inline {
@@ -23,8 +22,9 @@ global cell stg::user_proxy_acc_code;
         begin_cell()
             .store_coins(stg::lp_token_balance)
             .store_slice(stg::pool_addr)
+            .store_slice(stg::admin_addr)
             .store_ref(stg::user_proxy_acc_code)
-            .store_slice(stg::my_lp_jetton_wallet)
+            .store_ref(stg::lp_jetton_wallet_code)
         .end_cell()
     );
 }

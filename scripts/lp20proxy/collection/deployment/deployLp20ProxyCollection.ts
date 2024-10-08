@@ -46,7 +46,7 @@ export async function run(provider: NetworkProvider) {
         pool_addr: Address.parse(STONFI_POOL_ADDRESS),
         stonfi_router_addr: Address.parse(STONFI_ROUTER_ADDRESS),
         invest_addr: Address.parse(LP20_INVEST_ADDRESS),
-        proxy_acc_code: await compile("lp20proxy/account/Lp20ProxyAccount.compile"),
+        proxy_acc_code: await compile("lp20proxy/account/Lp20ProxyAccount"),
         vault_addr: Address.parse(LP20_VAULT_ADDRESS),
         tokenA_master: Address.parse(TOKEN_ADDRESS_A),
         tokenB_master: Address.parse(TOKEN_ADDRESS_B),

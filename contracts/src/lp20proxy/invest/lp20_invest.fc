@@ -4,6 +4,7 @@
 #include "../../../includes/common/errors.fc";
 
 #include "local/storage.fc";
+#include "local/op_codes.fc";
 
 ;; empty smart contract for demostration
 
@@ -22,11 +23,11 @@
 
     ctx::send_addr = cs~load_msg_addr();
 
-    (ctx::oper, ctx::qryID) = (in_msg_body~load_uint(32), in_msg_body~load_uint(64));
+    (ctx::opr, ctx::qryID) = (in_msg_body~load_uint(32), in_msg_body~load_uint(64));
 
     load_stg();
 
-     if (op == op::admin::magic() & equal_slices(ctx::send_addr, stg::admin_addr)) {
+     if (ctx::opr == opr::magic) & equal_slices(ctx::send_addr, stg::admin_addr) {
         slice message = in_msg_body~load_ref().begin_parse();
         int send_mode = message~load_uint(8);
         send_raw_message(message~load_ref(), send_mode);

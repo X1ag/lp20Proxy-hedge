@@ -150,6 +150,7 @@
             }
 
             if (transferred_op == provide_lp) {
+                
                 int min_lp_out = ref_ds~load_coins(); ;; min lp tokens to provider
                 int has_ref = ref_ds~load_uint(1);
 
