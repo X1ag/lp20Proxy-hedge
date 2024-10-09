@@ -8,7 +8,7 @@ const HOW_MANY: string = "2.2"
 const TO_ADDRESS: string = "0QANsjLvOX2MERlT4oyv2bSPEVc9lunSPIs5a1kPthCXydUX"
 
 export async function run(provider: NetworkProvider) {
-    const lp20ProxyCollection = provider.open(Lp20ProxyCollection.createFromAddress(Address.parse("kQCI-_sw2vpZSbKMT4cZ9avHAEMj--4ci2doCpv6fz3VxfG2")));
+    const lp20ProxyCollection = provider.open(Lp20ProxyCollection.createFromAddress(Address.parse(LP20_COLLECTION_ADDRESS)));
 
     await lp20ProxyCollection.sendMagic(provider.sender(), {
         value: toNano("0.1"),

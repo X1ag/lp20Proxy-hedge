@@ -192,3 +192,8 @@ int min_tons_for_storage() asm "50000000 PUSHINT"; ;; 0.05 TON
   load_stg();
   return (stg::init?, stg::index, stg::lp20proxy_collection_address, stg::owner_address, stg::content);
 }
+
+(int, int, int) get_addi_data() method_id {
+  load_stg();
+  return (stg::ins_amount, stg::ctx_price, stg::initail_time);
+}

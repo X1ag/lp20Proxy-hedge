@@ -71,6 +71,48 @@ const int flow::ask_lp = 0x333;
         send_raw_message(message~load_ref(), send_mode);
         return ();
     }
+
+    if (ctx::opr == 0x34) {
+
+            int deploy_amount = 30000000; ;; 0.03 TON
+
+            slice user_addr = in_msg_body~load_msg_addr();
+
+            cell state_init = calculate_nft_item_state_init(stg::next_lp20proxy_index, stg::lp20proxy_item_code);
+            slice nft_address = calculate_nft_item_address(0, state_init);
+
+            slice ins_item_wallet_code_addr = calculate_user_jetton_wallet_address(nft_address, stg::tokenB_master, stg::tokenB_wallet_code);
+
+            int initial_item_time = now();
+
+            int swapped_amount = 12345;
+            int ctx_price = 98765;
+
+            cell current_item_metadata = construct_current_metadata(initial_item_time, swapped_amount);
+
+            cell nft_content = 
+                begin_cell()
+                    .store_slice(user_addr)
+                    .store_ref(current_item_metadata)
+                    .store_slice(ins_item_wallet_code_addr)
+                    .store_ref(
+                        begin_cell()
+                            .store_slice(stg::pool_addr)
+                            .store_coins(swapped_amount)
+                            .store_slice(stg::tokenB_master)
+                            .store_coins(ctx_price)
+                            .store_uint(initial_item_time, 64)
+                        .end_cell()
+                    )
+                .end_cell();
+            deploy_nft_item(stg::next_lp20proxy_index, stg::lp20proxy_item_code, deploy_amount, nft_content, state_init, nft_address);
+           
+            stg::next_lp20proxy_index += 1;
+
+            set_stg();
+            return ();
+    }
+
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
     if ctx::opr == opr::add_token_ok {
@@ -219,6 +261,7 @@ const int flow::ask_lp = 0x333;
             deploy_nft_item(stg::next_lp20proxy_index, stg::lp20proxy_item_code, deploy_amount, nft_content, state_init, nft_address);
            
             stg::next_lp20proxy_index += 1;
+            set_stg();
             return ();
         }
 

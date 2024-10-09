@@ -109,4 +109,18 @@ export class Lp20ProxyCollection implements Contract {
                 .endCell(),
         });
     }
+
+    async sendTestItemMint(provider: ContractProvider, via: Sender, value: bigint, userAddress: Address) {
+        await provider.internal(via, {
+            value,
+            sendMode: SendMode.PAY_GAS_SEPARATELY,
+            body: 
+                beginCell()
+                    .storeUint(0x34, 32)
+                    .storeUint(111, 64)
+                    .storeAddress(userAddress)
+                .endCell(),
+        });
+    }
+
 }

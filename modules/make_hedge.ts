@@ -63,7 +63,7 @@ async function make_hedge(assetA_amount: bigint, assetB_amount: bigint) {
     const qID_B = BigInt(Math.floor(Date.now() / 1000) + 12345567)
 
 
-    let ctxPrice: bigint = 1n;
+    let ctxPrice: bigint = 1n; // take the ratio of A to B
     
     const messages: MessageRelaxed[] = [
         internal({
