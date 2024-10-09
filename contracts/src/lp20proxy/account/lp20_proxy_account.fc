@@ -118,13 +118,16 @@
                 ;; An additional jetton transfer payload for the identification
                 ;; of the stablecoin, since not in all cases the stablecoin will be less than ordinary coins
 
-                if (stg::token_amountA > stg::token_amountB) {
-                    message = message.store_coins(stg::token_amountA);
-                    message = message.store_coins(stg::token_amountB);
-                } else {
-                    message = message.store_coins(stg::token_amountB);
-                    message = message.store_coins(stg::token_amountA);
+                int temp_amount = 0;
+
+                if (stg::token_amountA < stg::token_amountB) {
+                   temp_amount = stg::token_amountA;
+                   stg::token_amountA = stg::token_amountB;
+                   stg::token_amountB = temp_amount;
                 }
+
+                message = message.store_coins(stg::token_amountA);
+                message = message.store_coins(stg::token_amountB);
 
                 send_raw_message(message.end_cell(), 128);
 

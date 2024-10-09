@@ -22,6 +22,7 @@ export type Lp20ProxyCollectionConfig = {
     tokenB_master: Address;
     tokenA_wallet_code: Cell;
     tokenB_wallet_code: Cell;
+    lp_jetton_wallet_code: Cell;
 };
 
 export function lp20ProxyCollectionConfigToCell(config: Lp20ProxyCollectionConfig): Cell {
@@ -52,6 +53,7 @@ export function lp20ProxyCollectionConfigToCell(config: Lp20ProxyCollectionConfi
                     .storeRef(
                         beginCell()
                             .storeAddress(config.invest_addr)
+                            .storeRef(config.lp_jetton_wallet_code)
                         .endCell()
                     )
                 .endCell()

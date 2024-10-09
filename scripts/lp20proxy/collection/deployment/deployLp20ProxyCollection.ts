@@ -52,6 +52,7 @@ export async function run(provider: NetworkProvider) {
         tokenB_master: Address.parse(TOKEN_ADDRESS_B),
         tokenA_wallet_code: await calculateJettonWalletCodesWithClient(TOKEN_ADDRESS_A),
         tokenB_wallet_code: await calculateJettonWalletCodesWithClient(TOKEN_ADDRESS_B),
+        lp_jetton_wallet_code: await compile("stonfi/lp_wallet/StonfiV1LpWallet")
     }, await compile('lp20proxy/collection/Lp20ProxyCollection')));
 
     await lp20ProxyCollection.sendDeploy(provider.sender(), toNano('0.02'));

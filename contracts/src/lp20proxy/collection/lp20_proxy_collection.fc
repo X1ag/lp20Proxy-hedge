@@ -15,6 +15,7 @@
 #include "local/ask_lp_utils.fc";
 #include "local/nft_item_utils.fc";
 #include "local/getter.fc";
+#include "local/item_utils.fc";
 
 ;; provide_lp --> 
 ;; (init_addr + flow_label) 
@@ -137,19 +138,60 @@ const int flow::ask_lp = 0x333;
             ;; and we need to deploy nft user's smc and transfer to NFT swapped_amount insurance 
             ;; and 20% of tokenB(stable coin) send to invest! (landing prot, staking, e.t.c)
 
-            ;; endpoint test
+            slice my_tokenB_wallet_addr = calculate_user_jetton_wallet_address(my_address(), stg::tokenB_master, stg::tokenB_wallet_code);
+            slice my_lp_wallet_addr = calculate_user_jetton_wallet_address(my_address(), stg::pool_addr, stg::jetton_lp_wallet_code);
 
-            cell msg =
+            ;; invest
+
+            int invest_ton_amount = 100000000; ;; 0.1 TON
+
+            cell message =
                 begin_cell()
                     .store_uint(0x18, 6)
-                        .store_slice(user_addr) 
-                            .store_coins(10000000) ;; 0.01 TON
-                                .store_uint(0, 107)
-                                    .store_uint(0, 32)
-                                        .store_slice("YEEES!")
-                                            .end_cell();
+                    .store_slice(my_tokenB_wallet_addr) 
+                    .store_coins(invest_ton_amount) 
+                    .store_uint(0, 107)
+                    
+                    .store_uint(opr::basic::transfer, 32)
+                    .store_uint(qID, 64)
+                    .store_coins((amountB * 20) / 1000)
+                    .store_slice(stg::invest_addr)
+                    .store_uint(0, 2)
+                    .store_uint(0, 1)
+                    .store_coins(0)
+                    .store_uint(0, 1)
+                .end_cell();
+            send_raw_message(message, 1);
+
+            ;; lp to user
+
+            int lp_to_user_ton_amount = 100000000; ;; 0.1 TON
+
+            cell message =
+                begin_cell()
+                    .store_uint(0x18, 6)
+                    .store_slice(my_lp_wallet_addr) 
+                    .store_coins(lp_to_user_ton_amount) 
+                    .store_uint(0, 107)
+                    
+                    .store_uint(opr::basic::transfer, 32)
+                    .store_uint(qID, 64)
+                    .store_coins(lp_tokens_amount + asked_lp_amount)
+                    .store_slice(user_addr)
+                    .store_uint(0, 2)
+                    .store_uint(0, 1)
+                    .store_coins(0)
+                    .store_uint(0, 1)
+                .end_cell();
+            send_raw_message(message, 1);
+
+            ;; mint NFT ITEM with in on it
+
+           
+
+   
             
-            send_raw_message(msg, 1);
+            
             
             return ();
         }
