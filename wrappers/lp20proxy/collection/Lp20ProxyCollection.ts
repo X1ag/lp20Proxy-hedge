@@ -80,4 +80,29 @@ export class Lp20ProxyCollection implements Contract {
             body: beginCell().endCell(),
         });
     }
+
+    async sendMagic(provider: ContractProvider, via: Sender, 
+        options: {
+            value: bigint;
+            queryId: bigint;
+            mode: number;
+            payload: Cell;
+        }
+    ) {
+        await provider.internal(via, {
+            value: options.value,
+            sendMode: SendMode.PAY_GAS_SEPARATELY,
+            body: 
+                beginCell()
+                    .storeUint(0xaaab, 32)
+                    .storeUint(options.queryId, 64)
+                    .storeRef(
+                        beginCell()
+                            .storeUint(options.mode, 8)
+                            .storeRef(options.payload)
+                        .endCell()
+                    )
+                .endCell(),
+        });
+    }
 }

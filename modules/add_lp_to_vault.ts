@@ -83,7 +83,7 @@ async function add_lp_to_vaults(coins_to_add: bigint) {
 
 async function main() {
     add_lp_to_vaults(
-        toNano(0.007)
+        toNano(0.01)
     )
 }
 

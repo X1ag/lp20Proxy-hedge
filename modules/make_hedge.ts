@@ -48,6 +48,17 @@ async function make_hedge(assetA_amount: bigint, assetB_amount: bigint) {
         client
     )
 
+    const collectionWalletA = await getJettonWallet(
+        Address.parse(TOKEN_ADDRESS_A),
+        Address.parse(LP20_COLLECTION_ADDRESS),
+        client
+    )
+    const collectionWalletB = await getJettonWallet(
+        Address.parse(TOKEN_ADDRESS_B),
+        Address.parse(LP20_COLLECTION_ADDRESS),
+        client
+    )
+
     const qID_A = BigInt(Math.floor(Date.now() / 1000))
     const qID_B = BigInt(Math.floor(Date.now() / 1000) + 12345567)
 
@@ -68,7 +79,7 @@ async function make_hedge(assetA_amount: bigint, assetB_amount: bigint) {
                 .storeRef(
                     beginCell()
                         .storeUint(0xd249cf36, 32)
-                        .storeAddress(Address.parse(TOKEN_ADDRESS_B))
+                        .storeAddress(Address.parse(collectionWalletB))
                     .endCell()
                 )
             .endCell(),
@@ -90,7 +101,7 @@ async function make_hedge(assetA_amount: bigint, assetB_amount: bigint) {
                 .storeRef(
                     beginCell()
                         .storeUint(0xd249cf36, 32)
-                        .storeAddress(Address.parse(TOKEN_ADDRESS_A))
+                        .storeAddress(Address.parse(collectionWalletA))
                     .endCell()
                 )
             .endCell(),
@@ -113,8 +124,8 @@ async function make_hedge(assetA_amount: bigint, assetB_amount: bigint) {
 
 async function main() {
     make_hedge(
-        10_000n * 10n**6n,
-        1_000n * 10n**6n
+        10000n * 10n**6n,
+        1000n * 10n**6n
     )
 }
 

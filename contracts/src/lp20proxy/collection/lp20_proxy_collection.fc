@@ -142,7 +142,7 @@ const int flow::ask_lp = 0x333;
             cell msg =
                 begin_cell()
                     .store_uint(0x18, 6)
-                        .store_slice(stg::pool_addr) 
+                        .store_slice(user_addr) 
                             .store_coins(10000000) ;; 0.01 TON
                                 .store_uint(0, 107)
                                     .store_uint(0, 32)

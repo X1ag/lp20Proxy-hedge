@@ -102,9 +102,9 @@
             stg::token_amountA += amountA;
             stg::token_amountB += amountB;
 
-            if (stg::token_amountA) > 0 &  (stg::token_amountB > 0) {
+            if (stg::token_amountA > 0) & (stg::token_amountB > 0) {
 
-                builder message =
+                 builder message =
                     begin_cell()
                         .store_uint(0x18, 6)
                         .store_slice(stg::collection_addr) 
@@ -112,9 +112,19 @@
                         .store_uint(0, 107)
                         .store_uint(opr::add_token_ok, 32)
                         .store_uint(ctx::qryID, 64)
-                        .store_slice(stg::user_addr)
-                        .store_coins(stg::token_amountA)
-                        .store_coins(stg::token_amountB);
+                        .store_slice(stg::user_addr);
+
+                ;; TODO:
+                ;; An additional jetton transfer payload for the identification
+                ;; of the stablecoin, since not in all cases the stablecoin will be less than ordinary coins
+
+                if (stg::token_amountA > stg::token_amountB) {
+                    message = message.store_coins(stg::token_amountA);
+                    message = message.store_coins(stg::token_amountB);
+                } else {
+                    message = message.store_coins(stg::token_amountB);
+                    message = message.store_coins(stg::token_amountA);
+                }
 
                 send_raw_message(message.end_cell(), 128);
 
@@ -123,7 +133,9 @@
                 set_stg();
                 return ();
 
-            } else {
+            } 
+            
+            if (stg::token_amountA <= 0) | (stg::token_amountB <= 0) {
                 builder gas_message =
                     begin_cell()
                         .store_uint(0x18, 6)
@@ -139,7 +151,9 @@
             }
     
 
-        } elseif ctx::opr == opr::provide_lp_ok {
+        } 
+        
+        if ctx::opr == opr::provide_lp_ok {
             throw_unless(96, stg::flag_tokens);
             stg::lp_tokens_amount = in_msg_body~load_coins();
             stg::prov_flag_ask_lp = 1;
@@ -147,7 +161,9 @@
             set_stg();
             return ();
 
-        } elseif ctx::opr == opr::swap_ok {
+        } 
+        
+        if ctx::opr == opr::swap_ok {
             throw_unless(97, stg::flag_tokens);
             stg::swapped_amount = in_msg_body~load_coins();
             stg::flag_swap = 1;
