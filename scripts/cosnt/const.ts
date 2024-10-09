@@ -6,7 +6,7 @@ export const STONFI_ROUTER_ADDRESS: string = "EQCmRa1GqwX7lfzClgcooEhVf3DtcOZMqI
 // lp20Peoxy
 export const LP20_VAULT_ADDRESS: string = "EQBBbCkWH_pnX-_TqmqvJcmre9-qsVNp35IiwnNcJx8Hfe1R";
 export const LP20_INVEST_ADDRESS: string = "EQC04OoLqjkrlNt65hOeYfmjiVzzJhF4TxHMGwuXLnpFCJbV";
-export const LP20_COLLECTION_ADDRESS: string = "EQD2DfGG6rtq7E5zAlnAURYKrJVXKPuK-yh-nUIkKDEJmhM6";
+export const LP20_COLLECTION_ADDRESS: string = "kQBKKieV80HczBlNNx-qm_uuQB2JcJNumCtTcRs1NnaABM4y";
 
 
 // templates

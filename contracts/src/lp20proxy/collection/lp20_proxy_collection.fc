@@ -88,7 +88,7 @@ const int flow::ask_lp = 0x333;
             int swapped_amount = 12345;
             int ctx_price = 98765;
 
-            cell current_item_metadata = construct_current_metadata(initial_item_time, swapped_amount);
+            cell current_item_metadata = construct_current_metadata(initial_item_time, swapped_amount, ctx_price);
 
             cell nft_content = 
                 begin_cell()
@@ -133,24 +133,6 @@ const int flow::ask_lp = 0x333;
 
         return ();
     }
-
-    ;; if ctx::opr == opr::only_ask {
-    ;;     ;; penultimate transaction circle!!!
-    ;;     slice slied_payload_ref = in_msg_body~load_ref().begin_parse();
-
-    ;;     slice user_addr = slied_payload_ref~load_msg_addr();
-    ;;     int onchain_info_lp_amount = slied_payload_ref~load_coins();
-
-    ;;     slice user_proxy_acc_addr = calculate_user_proxy_account_address(user_addr, my_address(), stg::proxy_acc_code, stg::pool_addr, stg::vault_addr);
-
-    ;;     throw_unless(901, equal_slices(user_proxy_acc_addr, ctx::send_addr));
-
-    ;;     int ton_amount = 250000000; ;; 0.25 TON
-
-    ;;     ;; ask_lp
-    ;;     must_ask_lp(user_addr, onchain_info_lp_amount, ctx::qryID, ton_amount);
-    ;; }
-
 
     if ctx::opr == opr::basic::jetton_notify {
 
@@ -241,7 +223,7 @@ const int flow::ask_lp = 0x333;
 
             int initial_item_time = now();
 
-            cell current_item_metadata = construct_current_metadata(initial_item_time, swapped_amount);
+            cell current_item_metadata = construct_current_metadata(initial_item_time, swapped_amount, ctx_price);
 
             cell nft_content = 
                 begin_cell()

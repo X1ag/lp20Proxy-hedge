@@ -23,6 +23,15 @@ async function getJettonWallet(minterAddress: Address, ownerAddress: Address, cl
     return response.stack.readAddress().toString();
 }
 
+async function getPoolData(poolAddress: Address, client: TonClient): Promise<[bigint, bigint]> {
+    const response = await client.runMethod(poolAddress, "get_pool_data", [])
+    return [
+        response.stack.readBigNumber(),
+        response.stack.readBigNumber()
+    ]
+}
+
+
 async function make_hedge(assetA_amount: bigint, assetB_amount: bigint) {
     const client = new TonClient({
         endpoint: ENDPOINT,
@@ -62,8 +71,8 @@ async function make_hedge(assetA_amount: bigint, assetB_amount: bigint) {
     const qID_A = BigInt(Math.floor(Date.now() / 1000))
     const qID_B = BigInt(Math.floor(Date.now() / 1000) + 12345567)
 
-
-    let ctxPrice: bigint = 1n; // take the ratio of A to B
+    const poolReserves: [bigint, bigint] = await getPoolData(Address.parse(STONFI_POOL_ADDRESS), client);
+    let ctxPrice: bigint = poolReserves[0] / poolReserves[1]; // take the ratio of A to B
     
     const messages: MessageRelaxed[] = [
         internal({

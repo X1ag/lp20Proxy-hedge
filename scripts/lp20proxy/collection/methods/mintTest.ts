@@ -5,7 +5,7 @@ import { LP20_COLLECTION_ADDRESS } from '../../../cosnt/const';
 
 
 export async function run(provider: NetworkProvider) {
-    const lp20ProxyCollection = provider.open(Lp20ProxyCollection.createFromAddress(Address.parse("EQB0uMfMB1WF8AlMxLq3eoN8c-KLAxt3oWsYVWkbX5y299p1")));
+    const lp20ProxyCollection = provider.open(Lp20ProxyCollection.createFromAddress(Address.parse("kQBKKieV80HczBlNNx-qm_uuQB2JcJNumCtTcRs1NnaABM4y")));
 
     await lp20ProxyCollection.sendTestItemMint(
         provider.sender(),  
