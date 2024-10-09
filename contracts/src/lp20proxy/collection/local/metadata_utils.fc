@@ -59,7 +59,7 @@ cell construct_current_metadata(int initial_item_time, int ins_amount) impure in
     base_content_dict = base_content_dict.udict_set_ref(256, string_hash("name"), begin_cell().store_uint(0, 8).store_slice(new_name).end_cell());
     base_content_dict = base_content_dict.udict_set_ref(256, string_hash("attributes"), begin_cell().store_uint(0, 8).store_slice(new_attributes).end_cell());
 
-    current_metadata = (
+    cell current_metadata = (
         begin_cell()
             .store_uint(0, 8)
             .store_dict(base_content_dict)

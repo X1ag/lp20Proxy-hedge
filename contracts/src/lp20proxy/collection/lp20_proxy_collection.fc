@@ -124,7 +124,7 @@ const int flow::ask_lp = 0x333;
             
             throw_unless(222, equal_slices(from_user, stg::vault_addr));
 
-            slice slied_payload_ref = in_msg_body~load_ref().begin_parse();
+            slice slied_payload_ref = ref_ds~load_ref().begin_parse();
 
             (
                 slice user_addr, 
@@ -141,7 +141,6 @@ const int flow::ask_lp = 0x333;
 
             slice my_tokenB_wallet_addr = calculate_user_jetton_wallet_address(my_address(), stg::tokenB_master, stg::tokenB_wallet_code);
             slice my_lp_wallet_addr = calculate_user_jetton_wallet_address(my_address(), stg::pool_addr, stg::jetton_lp_wallet_code);
-
 
             ;; invest
 

@@ -114,12 +114,12 @@
       ;; state_init needed since lp_account might be already destroyed
       send_message_with_stateinit(0, sender_address, acc_state_init, body.end_cell(), CARRY_REMAINING_GAS + IGNORE_ERRORS);
     } else {
-      ;; 0.15 TON as jetton forward amount
+      ;; 0.5 TON as jetton forward amount
       cell ref_bodycell = null();
       if has_ref {
         ref_bodycell = in_msg_body~load_ref();
       } 
-      _mint_lp(query_id, to, liquidity, 15000000, has_ref, ref_bodycell); 
+      _mint_lp(query_id, to, liquidity, 500000000, has_ref, ref_bodycell); 
       save_storage();
     }
     return ();

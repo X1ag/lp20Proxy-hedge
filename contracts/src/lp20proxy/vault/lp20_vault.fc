@@ -46,7 +46,7 @@
 
         slice my_lp_jetton_wallet = calculate_user_jetton_lp_wallet_address(my_address(), stg::pool_addr, stg::lp_jetton_wallet_code);
 
-        int amountB = 50000000; ;; 0.05 TON
+        int amountB = 500000000; ;; 0.5 TON
 
         cell message =
             begin_cell()
