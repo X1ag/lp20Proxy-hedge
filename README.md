@@ -35,4 +35,4 @@ https://testnet.tonviewer.com/transaction/db4084e6c9aebd92d16e429d74a59ce322d77e
 
 
 TAIGA Labs
-![Лого TAIGA Labs](images/taiga-logo.jpg)
+<img src="images/taiga-logo.jpg" width="100">
