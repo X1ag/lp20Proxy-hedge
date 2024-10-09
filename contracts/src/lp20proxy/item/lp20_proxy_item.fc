@@ -1,6 +1,10 @@
 
 #include "../../../includes/stdlib.fc";
+#include "../../../includes/common/context.fc";
+
+#include "local/storage.fc";
 #include "local/op_codes.fc";
+#include "local/params.fc";
 
 ;;
 ;;  TON NFT Item Smart Contract
@@ -18,37 +22,9 @@
 
 -}
 
+const int ONE_YEAR_IN_SECONDS = 31622400; ;; 1 year in seconds = 60 * 60 * 24 * 366
+
 int min_tons_for_storage() asm "50000000 PUSHINT"; ;; 0.05 TON
-
-;;
-;;  Storage
-;;
-;;  uint64 index
-;;  MsgAddressInt collection_address
-;;  MsgAddressInt owner_address
-;;  cell content
-;;
-
-(int, int, slice, slice, cell) load_data() {
-    slice ds = get_data().begin_parse();
-    var (index, collection_address) = (ds~load_uint(64), ds~load_msg_addr());
-    if (ds.slice_bits() > 0) {
-      return (-1, index, collection_address, ds~load_msg_addr(), ds~load_ref());
-    } else {  
-      return (0, index, collection_address, null(), null()); ;; nft not initialized yet
-    }
-}
-
-() store_data(int index, slice collection_address, slice owner_address, cell content) impure {
-    set_data(
-        begin_cell()
-            .store_uint(index, 64)
-            .store_slice(collection_address)
-            .store_slice(owner_address)
-            .store_ref(content) 
-       .end_cell()
-    );
-}
 
 () send_msg(slice to_address, int amount, int op, int query_id, builder payload, int send_mode) impure inline {
   var msg = begin_cell()
@@ -66,8 +42,8 @@ int min_tons_for_storage() asm "50000000 PUSHINT"; ;; 0.05 TON
   send_raw_message(msg.end_cell(), send_mode);
 }
 
-() transfer_ownership(int my_balance, int index, slice collection_address, slice owner_address, cell content, slice sender_address, int query_id, slice in_msg_body, int fwd_fees) impure inline {
-    throw_unless(401, equal_slices(sender_address, owner_address));
+() transfer_ownership(int my_balance, slice in_msg_body, int fwd_fees) impure inline {
+    throw_unless(401, equal_slices(ctx::send_addr, stg::owner_address));
 
     slice new_owner_address = in_msg_body~load_msg_addr();
     force_chain(new_owner_address);
@@ -88,14 +64,15 @@ int min_tons_for_storage() asm "50000000 PUSHINT"; ;; 0.05 TON
     throw_unless(402, rest_amount >= 0); ;; base nft spends fixed amount of gas, will not check for response
 
     if (forward_amount) {
-        send_msg(new_owner_address, forward_amount, op::ownership_assigned(), query_id, begin_cell().store_slice(owner_address).store_slice(in_msg_body), 1);  ;; paying fees, revert on errors
+        send_msg(new_owner_address, forward_amount, op::ownership_assigned(), ctx::qryID, begin_cell().store_slice(stg::owner_address).store_slice(in_msg_body), 1);  ;; paying fees, revert on errors
     }
     if (need_response) {
         force_chain(response_destination);
-        send_msg(response_destination, rest_amount, op::excesses(), query_id, null(), 1); ;; paying fees, revert on errors
+        send_msg(response_destination, rest_amount, op::excesses(), ctx::qryID, null(), 1); ;; paying fees, revert on errors
     }
 
-    store_data(index, collection_address, new_owner_address, content);
+    stg::owner_address = new_owner_address;
+    set_stg();
 }
 
 () recv_internal(int my_balance, int msg_value, cell in_msg_full, slice in_msg_body) impure {
@@ -109,7 +86,7 @@ int min_tons_for_storage() asm "50000000 PUSHINT"; ;; 0.05 TON
     if (flags & 1) { ;; ignore all bounced messages
         return ();
     }
-    slice sender_address = cs~load_msg_addr();
+    ctx::send_addr = cs~load_msg_addr();
 
     cs~load_msg_addr(); ;; skip dst
     cs~load_coins(); ;; skip value
@@ -117,25 +94,93 @@ int min_tons_for_storage() asm "50000000 PUSHINT"; ;; 0.05 TON
     cs~load_coins(); ;; skip ihr_fee
     int fwd_fee = muldiv(cs~load_coins(), 3, 2); ;; we use message fwd_fee for estimation of forward_payload costs
 
+    load_stg();
 
-    (int init?, int index, slice collection_address, slice owner_address, cell content) = load_data();
-    if (~ init?) {
-      throw_unless(405, equal_slices(collection_address, sender_address));
-      store_data(index, collection_address, in_msg_body~load_msg_addr(), in_msg_body~load_ref());
+    if (~ stg::init?) {
+      throw_unless(405, equal_slices(stg::lp20proxy_collection_address, ctx::send_addr));
+      stg::owner_address = in_msg_body~load_msg_addr();
+      stg::content = in_msg_body~load_ref();
+      stg::ins_jetton_wallet = in_msg_body~load_msg_addr();
+
+      slice addi_cont = in_msg_body~load_ref().begin_parse();
+
+      stg::pool_addr = addi_cont~load_msg_addr();
+      stg::ins_amount = addi_cont~load_coins();
+      stg::ins_jetton_master_addr = addi_cont~load_msg_addr();
+      stg::ctx_price = addi_cont~load_coins();
+      stg::initail_time = addi_cont~load_uint(64);
+
+      set_stg();
       return ();
     }
 
-    int op = in_msg_body~load_uint(32);
-    int query_id = in_msg_body~load_uint(64);
+    (ctx::opr, ctx::qryID) = (in_msg_body~load_uint(32), in_msg_body~load_uint(64));
 
-    if (op == op::transfer()) {
-      transfer_ownership(my_balance, index, collection_address, owner_address, content, sender_address, query_id, in_msg_body, fwd_fee);
+    if (ctx::opr == op::transfer()) {
+      transfer_ownership(my_balance, in_msg_body, fwd_fee);
       return ();
     }
-    if (op == op::get_static_data()) {
-      send_msg(sender_address, 0, op::report_static_data(), query_id, begin_cell().store_uint(index, 256).store_slice(collection_address), 64);  ;; carry all the remaining value of the inbound message
+    if (ctx::opr == op::get_static_data()) {
+      send_msg( ctx::send_addr, 0, op::report_static_data(), ctx::qryID, begin_cell().store_uint(stg::index, 256).store_slice(stg::lp20proxy_collection_address), 64);  ;; carry all the remaining value of the inbound message
       return ();
     }
+
+    if (ctx::opr == opr::get_ins) {
+        throw_unless(121, stg::ins_amount > 0);
+        throw_unless(122, (now() - stg::initail_time) < ONE_YEAR_IN_SECONDS)
+        throw_unless(123, equal_slices(ctx::send_addr, stg::owner_address));
+        cell message = 
+            begin_cell()
+                .store_uint(0x18, 6)
+                .store_slice(stg::pool_addr) 
+                .store_coins(0) 
+                .store_uint(0, 107)
+                
+                .store_uint(opr::getter_expected_outputs, 32)
+                .store_uint(ctx::qryID, 64)
+
+                .store_coins(stg::ctx_price)
+                .store_slice(stg::ins_jetton_master_addr)
+            .end_cell();
+
+        send_raw_message(message, 64);
+        return ();
+    }
+
+    if (ctx::opr == opr::getter_expected_outputs) {
+        throw_unless(124, equal_slices(ctx::send_addr, stg::pool_addr));
+        int out = in_msg_body~load_coins();
+
+        int difference = (stg::ctx_price * 20) / 100;
+        if (out >= stg::ctx_price + difference) {
+            cell message = 
+                begin_cell()
+                    .store_uint(0x18, 6)
+                    .store_slice(stg::ins_jetton_wallet) 
+                    .store_coins(0) 
+                    .store_uint(0, 107)
+                    
+                    .store_uint(opr::basic::transfer, 32)
+                    .store_uint(ctx::qryID, 64)
+
+                    .store_coins(stg::ins_amount)
+                    .store_slice(stg::owner_address)
+                    .store_uint(0, 2)
+                    .store_uint(0, 1)
+                    .store_coins(0)
+                    .store_uint(0, 1)
+                .end_cell();
+            send_raw_message(message, 64);
+
+        } else {
+            throw(225);
+        }
+
+        stg::ins_amount = 0;
+        set_stg();
+        return ();
+    }
+
     throw(0xffff);
 }
 
@@ -144,6 +189,6 @@ int min_tons_for_storage() asm "50000000 PUSHINT"; ;; 0.05 TON
 ;;
 
 (int, int, slice, slice, cell) get_nft_data() method_id {
-  (int init?, int index, slice collection_address, slice owner_address, cell content) = load_data();
-  return (init?, index, collection_address, owner_address, content);
+  load_stg();
+  return (stg::init?, stg::index, stg::lp20proxy_collection_address, stg::owner_address, stg::content);
 }

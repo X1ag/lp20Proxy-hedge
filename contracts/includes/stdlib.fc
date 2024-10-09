@@ -20,6 +20,7 @@
 -}
 
 ;; sdlib++
+int builder_null?(builder b) asm "ISNULL";
 (int) equal_slices (slice s1, slice s2) asm "SDEQ";
 (int) mod (int x, int y) asm "MOD";
 (int) divc (int x, int y) asm "DIVC";

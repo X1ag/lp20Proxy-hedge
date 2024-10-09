@@ -17,6 +17,7 @@ global int stg::prov_flag_ask_lp;
 global int stg::flag_swap;
 global int stg::flag_onchain_info;
 
+global int stg::ctx_price;
 
 () load_stg() impure inline {
     slice smc_stg = get_data().begin_parse();
@@ -36,11 +37,13 @@ global int stg::flag_onchain_info;
     slice addi_slice = smc_stg~load_ref().begin_parse();
     stg::onchain_info_lp = addi_slice~load_coins();
     stg::vault_addr = addi_slice~load_msg_addr();
+    stg::ctx_price = addi_slice~load_coins();
 
     stg::flag_tokens = smc_stg~load_uint(1);
     stg::prov_flag_ask_lp = smc_stg~load_uint(1);
     stg::flag_swap = smc_stg~load_uint(1);
     stg::flag_onchain_info = smc_stg~load_uint(1);
+    
 }
 
 () set_stg() impure inline {
@@ -62,6 +65,7 @@ global int stg::flag_onchain_info;
                 begin_cell()
                     .store_coins(stg::onchain_info_lp)
                     .store_slice(stg::vault_addr)
+                    .store_coins(stg::ctx_price)
                 .end_cell()
             )
             .store_uint(stg::flag_tokens, 1)

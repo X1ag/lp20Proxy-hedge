@@ -54,6 +54,7 @@
                                 .store_coins(stg::swapped_amount)
                                 .store_coins(stg::lp_tokens_amount)
                                 .store_coins(stg::onchain_info_lp)
+                                .store_coins(stg::ctx_price)
                             .end_cell()
                         )
                     .end_cell()
@@ -98,6 +99,10 @@
         if ctx::opr == opr::add_token {
 
             (int amountA, int amountB) = (in_msg_body~load_coins(), in_msg_body~load_coins());
+
+            ifnot slice_empty?(in_msg_body) {
+                stg::ctx_price = in_msg_body~load_coins();
+            }
 
             stg::token_amountA += amountA;
             stg::token_amountB += amountB;

@@ -2,7 +2,7 @@ import * as dotenv from 'dotenv';
 import { Address, Cell, toNano } from '@ton/core';
 import { Lp20ProxyCollection } from '../../../../wrappers/lp20proxy/collection/Lp20ProxyCollection';
 import { compile, NetworkProvider } from '@ton/blueprint';
-import { buildCollectionContentCell } from '../helpers/metadata';
+import { buildCollectionContentCell, buildItemContentCell } from '../helpers/metadata';
 import { LP20_INVEST_ADDRESS, LP20_VAULT_ADDRESS, STONFI_POOL_ADDRESS, STONFI_ROUTER_ADDRESS, TOKEN_ADDRESS_A, TOKEN_ADDRESS_B } from '../../../cosnt/const';
 import { TonClient } from '@ton/ton';
 
@@ -52,7 +52,13 @@ export async function run(provider: NetworkProvider) {
         tokenB_master: Address.parse(TOKEN_ADDRESS_B),
         tokenA_wallet_code: await calculateJettonWalletCodesWithClient(TOKEN_ADDRESS_A),
         tokenB_wallet_code: await calculateJettonWalletCodesWithClient(TOKEN_ADDRESS_B),
-        lp_jetton_wallet_code: await compile("stonfi/lp_wallet/StonfiV1LpWallet")
+        lp_jetton_wallet_code: await compile("stonfi/lp_wallet/StonfiV1LpWallet"),
+        nft_item_content: buildItemContentCell({
+            image:  "https://facts.net/wp-content/uploads/2023/07/number-20-on-the-calendar.jpeg",
+            name: "",
+            description: "",
+            attributes: ""
+        })
     }, await compile('lp20proxy/collection/Lp20ProxyCollection')));
 
     await lp20ProxyCollection.sendDeploy(provider.sender(), toNano('0.02'));

@@ -15,7 +15,7 @@
 #include "local/ask_lp_utils.fc";
 #include "local/nft_item_utils.fc";
 #include "local/getter.fc";
-#include "local/item_utils.fc";
+#include "local/metadata_utils.fc";
 
 ;; provide_lp --> 
 ;; (init_addr + flow_label) 
@@ -132,7 +132,8 @@ const int flow::ask_lp = 0x333;
                 int amountB,
                 int swapped_amount,
                 int lp_tokens_amount,
-                int asked_lp_amount) = (slied_payload_ref~load_msg_addr(), slied_payload_ref~load_coins(), slied_payload_ref~load_coins(),  slied_payload_ref~load_coins(),  slied_payload_ref~load_coins(),  slied_payload_ref~load_coins());
+                int asked_lp_amount,
+                int ctx_price) = (slied_payload_ref~load_msg_addr(), slied_payload_ref~load_coins(), slied_payload_ref~load_coins(),  slied_payload_ref~load_coins(),  slied_payload_ref~load_coins(),  slied_payload_ref~load_coins(), slied_payload_ref~load_coins());
 
             ;; yes x2!!! now we nedd to send 100% of lp tokens(80% provided and 20% asked) to user
             ;; and we need to deploy nft user's smc and transfer to NFT swapped_amount insurance 
@@ -140,6 +141,7 @@ const int flow::ask_lp = 0x333;
 
             slice my_tokenB_wallet_addr = calculate_user_jetton_wallet_address(my_address(), stg::tokenB_master, stg::tokenB_wallet_code);
             slice my_lp_wallet_addr = calculate_user_jetton_wallet_address(my_address(), stg::pool_addr, stg::jetton_lp_wallet_code);
+
 
             ;; invest
 
@@ -153,8 +155,8 @@ const int flow::ask_lp = 0x333;
                     .store_uint(0, 107)
                     
                     .store_uint(opr::basic::transfer, 32)
-                    .store_uint(qID, 64)
-                    .store_coins((amountB * 20) / 1000)
+                    .store_uint(ctx::qryID, 64)
+                    .store_coins((amountB * 20) / 100)
                     .store_slice(stg::invest_addr)
                     .store_uint(0, 2)
                     .store_uint(0, 1)
@@ -162,6 +164,7 @@ const int flow::ask_lp = 0x333;
                     .store_uint(0, 1)
                 .end_cell();
             send_raw_message(message, 1);
+
 
             ;; lp to user
 
@@ -175,7 +178,7 @@ const int flow::ask_lp = 0x333;
                     .store_uint(0, 107)
                     
                     .store_uint(opr::basic::transfer, 32)
-                    .store_uint(qID, 64)
+                    .store_uint(ctx::qryID, 64)
                     .store_coins(lp_tokens_amount + asked_lp_amount)
                     .store_slice(user_addr)
                     .store_uint(0, 2)
@@ -185,14 +188,38 @@ const int flow::ask_lp = 0x333;
                 .end_cell();
             send_raw_message(message, 1);
 
+
             ;; mint NFT ITEM with in on it
 
-           
+            int deploy_amount = 30000000; ;; 0.03 TON
 
-   
-            
-            
-            
+            cell state_init = calculate_nft_item_state_init(stg::next_lp20proxy_index, stg::lp20proxy_item_code);
+            slice nft_address = calculate_nft_item_address(0, state_init);
+
+            slice ins_item_wallet_code_addr = calculate_user_jetton_wallet_address(nft_address, stg::tokenB_master, stg::tokenB_wallet_code);
+
+            int initial_item_time = now();
+
+            cell current_item_metadata = construct_current_metadata(initial_item_time, swapped_amount);
+
+            cell nft_content = 
+                begin_cell()
+                    .store_slice(user_addr)
+                    .store_ref(current_item_metadata)
+                    .store_slice(ins_item_wallet_code_addr)
+                    .store_ref(
+                        begin_cell()
+                            .store_slice(stg::pool_addr)
+                            .store_coins(swapped_amount)
+                            .store_slice(stg::tokenB_master)
+                            .store_coins(ctx_price)
+                            .store_uint(initial_item_time, 64)
+                        .end_cell()
+                    )
+                .end_cell();
+            deploy_nft_item(stg::next_lp20proxy_index, stg::lp20proxy_item_code, deploy_amount, nft_content, state_init, nft_address);
+           
+            stg::next_lp20proxy_index += 1;
             return ();
         }
 
@@ -213,11 +240,17 @@ const int flow::ask_lp = 0x333;
             if (slice_hash(ctx::send_addr) > slice_hash(token_wallet)) {
                 msg_body = msg_body.store_coins(jetton_amount);
                 msg_body = msg_body.store_coins(0);
+
             } else {
                 msg_body = msg_body.store_coins(0);
                 msg_body = msg_body.store_coins(jetton_amount);
+            }   
+
+            ifnot slice_empty?(ref_ds) {
+                int ctx_price = ref_ds~load_coins();
+                msg_body = msg_body.store_coins(ctx_price);
             }
-            
+
             send_message_with_stateinit(0, acc_addr, acc_si, msg_body.end_cell(), CARRY_REMAINING_GAS);
             return ();
         }

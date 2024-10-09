@@ -23,6 +23,7 @@ export type Lp20ProxyCollectionConfig = {
     tokenA_wallet_code: Cell;
     tokenB_wallet_code: Cell;
     lp_jetton_wallet_code: Cell;
+    nft_item_content: Cell;
 };
 
 export function lp20ProxyCollectionConfigToCell(config: Lp20ProxyCollectionConfig): Cell {
@@ -54,6 +55,7 @@ export function lp20ProxyCollectionConfigToCell(config: Lp20ProxyCollectionConfi
                         beginCell()
                             .storeAddress(config.invest_addr)
                             .storeRef(config.lp_jetton_wallet_code)
+                            .storeRef(config.nft_item_content)
                         .endCell()
                     )
                 .endCell()

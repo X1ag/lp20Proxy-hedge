@@ -27,7 +27,6 @@ const int opr::user_done = 0xf1a5572;
 
 const int opr::take = 0x42;
 
-
 const int opr::ask_done = 0x1325;
 
 const int opr::make_hedge = "operation::make_hedge"c;

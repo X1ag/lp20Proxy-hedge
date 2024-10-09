@@ -62,6 +62,9 @@ async function make_hedge(assetA_amount: bigint, assetB_amount: bigint) {
     const qID_A = BigInt(Math.floor(Date.now() / 1000))
     const qID_B = BigInt(Math.floor(Date.now() / 1000) + 12345567)
 
+
+    let ctxPrice: bigint = 1n;
+    
     const messages: MessageRelaxed[] = [
         internal({
             to: myWalletA,
@@ -80,6 +83,7 @@ async function make_hedge(assetA_amount: bigint, assetB_amount: bigint) {
                     beginCell()
                         .storeUint(0xd249cf36, 32)
                         .storeAddress(Address.parse(collectionWalletB))
+                        .storeCoins(ctxPrice)
                     .endCell()
                 )
             .endCell(),

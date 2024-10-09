@@ -1,0 +1,70 @@
+slice number_to_string(int number) inline {
+
+    builder string = begin_cell();
+    tuple chars = null();
+
+    do {
+        int r = number~divmod(10);
+        chars = cons(r + 48, chars);
+    } 
+    until (number == 0);
+    
+    do {
+        int char = chars~list_next();
+        string~store_uint(char, 8);
+    } until (null?(chars));
+
+    slice result = string.end_cell().begin_parse();
+    return result;
+}
+
+cell construct_current_metadata(int initial_item_time, int ins_amount) impure inline {
+    cell base_content = stg::nft_item_content;
+
+    slice base_content_slice = base_content.begin_parse();
+    int onchain_prefix = base_content_slice~load_uint(8);
+
+    cell base_content_dict = new_dict();
+
+    slice new_name = (
+        begin_cell()
+            .store_slice("Lp20Proxy Item #")
+            .store_ref(
+                begin_cell()
+                    .store_slice(number_to_string(stg::next_lp20proxy_index))
+                .end_cell()
+            )
+        .end_cell().begin_parse()
+    );
+
+    slice new_attributes = (
+        begin_cell()
+            .store_slice("[{'trait_type':'Insurance amount','value':'")
+            .store_ref(
+                begin_cell()
+                    .store_slice(number_to_string(ins_amount))
+                    .store_ref(
+                        begin_cell()
+                            .store_slice("'},{'trait_type':'deadline','value':'")
+                            .store_slice(number_to_string(initial_item_time))
+                            .store_slice("'}]")
+                        .end_cell()
+                    )
+                .end_cell()
+            )
+        .end_cell().begin_parse()
+    );
+
+    cell base_content_dict = base_content_slice~load_dict();
+    base_content_dict = base_content_dict.udict_set_ref(256, string_hash("name"), begin_cell().store_uint(0, 8).store_slice(new_name).end_cell());
+    base_content_dict = base_content_dict.udict_set_ref(256, string_hash("attributes"), begin_cell().store_uint(0, 8).store_slice(new_attributes).end_cell());
+
+    current_metadata = (
+        begin_cell()
+            .store_uint(0, 8)
+            .store_dict(base_content_dict)
+        .end_cell()
+    );
+
+    return current_metadata;
+}

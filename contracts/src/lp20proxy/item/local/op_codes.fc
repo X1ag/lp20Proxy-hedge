@@ -10,3 +10,15 @@ int op::report_royalty_params() asm "0xa8cb00ad PUSHINT";
 int op::edit_content() asm "0x1a0b9d51 PUSHINT";
 int op::transfer_editorship() asm "0x1c04412a PUSHINT";
 int op::editorship_assigned() asm "0x511a4463 PUSHINT";
+
+;; ext
+
+const int opr::get_ins = 0x124;
+
+const opr::getter_expected_outputs = "getter_expected_outputs"c;
+
+
+;; basic
+const int opr::basic::transfer = 0xf8a7ea5;
+const int opr::basic::excess = 0xd53276db;
+const int opr::basic::jetton_notify = 0x7362d09c;

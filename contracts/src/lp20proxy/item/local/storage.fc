@@ -1,0 +1,80 @@
+
+
+;;
+;;  Storage
+;;
+;;  uint64 index
+;;  MsgAddressInt collection_address
+;;  MsgAddressInt owner_address
+;;  cell content
+;;
+
+
+global int stg::init?;
+
+global int stg::index;
+global slice stg::lp20proxy_collection_address;
+
+global slice stg::owner_address;
+global cell stg::content;
+global slice stg::ins_jetton_wallet;
+global slice stg::pool_addr;
+global int stg::ins_amount;
+global slice stg::ins_jetton_master_addr;
+global int stg::ctx_price;
+global int stg::initail_time;
+
+() load_stg() impure inline {
+    slice smc_stg = get_data().begin_parse();
+
+    stg::index = smc_stg~load_uint(64);
+    stg::lp20proxy_collection_address = smc_stg~load_msg_addr();
+
+    if (smc_stg.slice_bits() > 0) {
+        stg::init? = -1;
+        stg::owner_address = smc_stg~load_msg_addr();
+        stg::content = smc_stg~load_ref();
+        stg::ins_jetton_wallet = smc_stg~load_msg_addr();
+
+        slice addi_stg = smc_stg~load_ref().begin_parse();
+
+        stg::pool_addr = addi_stg~load_msg_addr();
+        stg::ins_amount = addi_stg~load_coins();
+        stg::ins_jetton_master_addr = addi_stg~load_msg_addr();
+        stg::ctx_price = addi_stg~load_coins();
+        stg::initail_time = addi_stg~load_uint(64);
+    } else {  
+        stg::init? = 0; ;; nft not initialized yet
+        stg::owner_address = null();
+        stg::content = null();
+        stg::ins_jetton_wallet = null();
+        stg::pool_addr = null();
+        stg::ins_amount = null();
+        stg::ins_jetton_master_addr = null();
+        stg::ctx_price = null();
+        stg::initail_time = null();
+    }
+}
+
+() set_stg() impure inline {
+    set_data(
+        begin_cell()
+            .store_int(stg::init?, 2)
+            .store_uint(stg::index, 64)
+            .store_slice(stg::lp20proxy_collection_address)
+            .store_slice(stg::owner_address)
+            .store_ref(stg::content) 
+            .store_slice(stg::ins_jetton_wallet)
+            .store_ref(
+                begin_cell()
+                    .store_slice(stg::pool_addr)
+                    .store_coins(stg::ins_amount)
+                    .store_slice(stg::ins_jetton_master_addr)
+                    .store_coins(stg::ctx_price)
+                    .store_uint(stg::initail_time, 64)
+                .end_cell()
+            )
+            
+       .end_cell()
+    );
+}
