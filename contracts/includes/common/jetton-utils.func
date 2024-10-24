@@ -6,7 +6,7 @@
             .store_uint(query_id, 64)
             .store_coins(jetton_amount)
             .store_slice(to) ;; to_owner_address
-            .store_slice(to)
+            .store_uint(0, 2)
             .store_uint(0, 1) ;; null custom payload
             .store_coins(fwd_amount); ;; forward_ton_amount
 

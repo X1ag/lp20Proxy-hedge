@@ -77,7 +77,7 @@ async function make_hedge(assetA_amount: bigint, assetB_amount: bigint) {
     const messages: MessageRelaxed[] = [
         internal({
             to: myWalletA,
-            value: toNano("2.2"),
+            value: toNano("0.65"),
             body: 
             beginCell()
                 .storeUint(0xf8a7ea5, 32)
@@ -86,7 +86,7 @@ async function make_hedge(assetA_amount: bigint, assetB_amount: bigint) {
                 .storeAddress(Address.parse(LP20_COLLECTION_ADDRESS))
                 .storeUint(0, 2) // response address -- null
                 .storeUint(0, 1) // null custom payload
-                .storeCoins(toNano("2"))
+                .storeCoins(toNano("0.6"))
                 .storeUint(1, 1)
                 .storeRef(
                     beginCell()
@@ -100,7 +100,7 @@ async function make_hedge(assetA_amount: bigint, assetB_amount: bigint) {
 
         internal({
             to: myWalletB,
-            value: toNano("2.2"),
+            value: toNano("0.65"),
             body: 
             beginCell()
                 .storeUint(0xf8a7ea5, 32)
@@ -109,7 +109,7 @@ async function make_hedge(assetA_amount: bigint, assetB_amount: bigint) {
                 .storeAddress(Address.parse(LP20_COLLECTION_ADDRESS))
                 .storeUint(0, 2) // response address -- null
                 .storeUint(0, 1) // null custom payload
-                .storeCoins(toNano("2"))
+                .storeCoins(toNano("0.6"))
                 .storeUint(1, 1)
                 .storeRef(
                     beginCell()

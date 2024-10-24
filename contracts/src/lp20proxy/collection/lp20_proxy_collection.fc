@@ -129,7 +129,7 @@ const int flow::ask_lp = 0x333;
         must_provide_lp(user_addr, amountA, amountB);
 
         ;; get onchain lp info about 20% of stake
-        must_send_onchain_info_to_acc(ctx::qryID, user_addr, amountA, amountB, 50000000); ;; 0.05 TON as ton amount
+        must_send_onchain_info_to_acc(ctx::qryID, user_addr, amountA, amountB, 10000000); ;; 0.01 TON as ton amount
 
         return ();
     }
@@ -168,7 +168,7 @@ const int flow::ask_lp = 0x333;
 
             ;; invest
 
-            int invest_ton_amount = 100000000; ;; 0.1 TON
+            int invest_ton_amount = 40000000; ;; 0.04 TON
 
             cell message =
                 begin_cell()
@@ -191,7 +191,7 @@ const int flow::ask_lp = 0x333;
 
             ;; lp to user
 
-            int lp_to_user_ton_amount = 100000000; ;; 0.1 TON
+            int lp_to_user_ton_amount = 40000000; ;; 0.04 TON
 
             cell message =
                 begin_cell()
@@ -214,7 +214,7 @@ const int flow::ask_lp = 0x333;
 
             ;; mint NFT ITEM with in on it
 
-            int deploy_amount = 30000000; ;; 0.03 TON
+            int deploy_amount = 20000000; ;; 0.02 TON
 
             cell state_init = calculate_nft_item_state_init(stg::next_lp20proxy_index, stg::lp20proxy_item_code);
             slice nft_address = calculate_nft_item_address(0, state_init);
@@ -244,6 +244,22 @@ const int flow::ask_lp = 0x333;
            
             stg::next_lp20proxy_index += 1;
             set_stg();
+
+
+            msg_value -= (invest_ton_amount + lp_to_user_ton_amount + deploy_amount);
+            if msg_value > 0 {
+
+                cell message =
+                    begin_cell()
+                        .store_uint(0x18, 6)
+                        .store_slice(user_addr) 
+                        .store_coins(msg_value) 
+                        .store_uint(0, 107)
+                    .end_cell();
+
+                send_raw_message(message, 1);
+            }
+
             return ();
         }
 

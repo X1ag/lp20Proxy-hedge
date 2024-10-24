@@ -73,15 +73,15 @@
             mode = NORMAL;
         }
 
-        ;; 0.5 TON - forward TON amount
+        ;; 0.24 TON - forward TON amount
         if (amount0_out > 0) {
-            var body0 = create_simple_transfer_body(query_id, 500000000, amount0_out, owner, addi_ref_bodycell);
+            var body0 = create_simple_transfer_body(query_id, 240000000, amount0_out, owner, addi_ref_bodycell);
             body0 = body0.store_uint(exit_code, 32); ;; append exit code
             send_simple_message(ton_amount, token0_address, body0.end_cell(), mode | IGNORE_ERRORS);
         }
 
         if (amount1_out > 0) {
-            var body1 = create_simple_transfer_body(query_id, 500000000, amount1_out, owner, addi_ref_bodycell);
+            var body1 = create_simple_transfer_body(query_id, 240000000, amount1_out, owner, addi_ref_bodycell);
             body1 = body1.store_uint(exit_code, 32); ;; append exit code
             send_simple_message(ton_amount, token1_address, body1.end_cell(), mode | IGNORE_ERRORS);
         }

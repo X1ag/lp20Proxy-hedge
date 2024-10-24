@@ -51,8 +51,8 @@ cell create_provide_lp_message(int qID, int jetton_amount, int fwd_amount, cell 
             .end_cell();
 
 
-        int ww_amountA = 1000000000; ;; 240000000
-        int ww_amountB = 500000000; ;; 300000000
+        int ww_amountA = 360000000; ;; 0.36 TON
+        int ww_amountB = 300000000; ;; 0.30 TON 
 
         ;; provide only 80%
 

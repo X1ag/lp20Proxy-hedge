@@ -1,12 +1,12 @@
 
 // extended stonfi
-export const STONFI_POOL_ADDRESS: string = "0QDRgbSCHf37G39p64zNM5eG8FL2HHlMlmW_Oi1ZqqMFlwcY";
-export const STONFI_ROUTER_ADDRESS: string = "EQCmRa1GqwX7lfzClgcooEhVf3DtcOZMqIoRRnsS3xve9e3r";
+export const STONFI_POOL_ADDRESS: string = "kQA14LlCtLE0FZrj7Norc4GQ5FQraqxgjkGELaJdHiOHOwwD";
+export const STONFI_ROUTER_ADDRESS: string = "EQAQA9xJdxAKaagNwBEVcESFIjxseeFWvoTQEr53pFFyFORS";
 
 // lp20Peoxy
-export const LP20_VAULT_ADDRESS: string = "EQBBbCkWH_pnX-_TqmqvJcmre9-qsVNp35IiwnNcJx8Hfe1R";
+export const LP20_VAULT_ADDRESS: string = "EQB2XX5ouks-yYB76ewMhYib853GI8i1JBj6TFJVsTgSqq45";
 export const LP20_INVEST_ADDRESS: string = "EQC04OoLqjkrlNt65hOeYfmjiVzzJhF4TxHMGwuXLnpFCJbV";
-export const LP20_COLLECTION_ADDRESS: string = "kQBKKieV80HczBlNNx-qm_uuQB2JcJNumCtTcRs1NnaABM4y";
+export const LP20_COLLECTION_ADDRESS: string = "EQAYWJaCOjZlyYm3UjVrQ0Pj-twKAjFiGS_2mSTDHBG40qfZ";
 
 
 // templates
